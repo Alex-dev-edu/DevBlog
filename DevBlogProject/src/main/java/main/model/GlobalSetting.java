@@ -18,13 +18,9 @@ public class GlobalSetting {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int id;
 
-  @Enumerated(EnumType.STRING)
-  @Column(columnDefinition = "enum")
-  private GlobalSettingCode code;
+  private String code;
 
   private String name;
 
-  @Enumerated(EnumType.STRING)
-  @Column(columnDefinition = "enum")
-  private GlobalSettingsValue value;
+  private String value;
 }

@@ -31,18 +31,21 @@ public class Post {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int id;
 
+  @Column(name = "is_active")
   private String isActive;
 
   @Enumerated(EnumType.STRING)
-  @Column(columnDefinition = "enum")
+  @Column(columnDefinition = "ENUM('NEW', 'ACCEPTED', 'DECLINED')")
   private ModerationStatus moderationStatus;
 
   @Nullable
+  @Column(name = "moderator_id", insertable = false, updatable = false)
   private int moderatorId;
 
   @ManyToOne
   private User moderator;
 
+  @Column(name = "user_id", insertable = false, updatable = false)
   private int userId;
 
   @ManyToOne
@@ -55,6 +58,7 @@ public class Post {
 
   private String text;
 
+  @Column(name = "view_count")
   private int viewCount;
 
   @ManyToMany

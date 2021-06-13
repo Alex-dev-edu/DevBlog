@@ -3,6 +3,7 @@ package main.model;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -24,9 +25,11 @@ public class User {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int id;
 
+  @Column(name = "is_moderator")
   private String isModerator;
 
   @Temporal(TemporalType.TIMESTAMP)
+  @Column(name = "reg_time")
   private Date regTime;
 
   private String name;

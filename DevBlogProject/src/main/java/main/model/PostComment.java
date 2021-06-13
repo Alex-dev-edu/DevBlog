@@ -1,6 +1,7 @@
 package main.model;
 
 import java.util.Date;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -22,16 +23,19 @@ public class PostComment {
   private int id;
 
   @Nullable
+  @Column(name = "parent_id", insertable = false, updatable = false)
   private int parentId;
 
   @OneToOne
   private PostComment parent;
 
+  @Column(name = "post_id", insertable = false, updatable = false)
   private int postId;
 
   @ManyToOne
   private Post post;
 
+  @Column(name = "user_id", insertable = false, updatable = false)
   private int userId;
 
   @ManyToOne

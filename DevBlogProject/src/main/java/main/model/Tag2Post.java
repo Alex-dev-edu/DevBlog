@@ -1,5 +1,6 @@
 package main.model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -16,11 +17,13 @@ public class Tag2Post {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int id;
 
+  @Column(name = "post_id", insertable = false, updatable = false)
   private int postId;
 
   @ManyToOne
   private Post post;
 
+  @Column(name = "tag_id", insertable = false, updatable = false)
   private int tagId;
 
   @ManyToOne
