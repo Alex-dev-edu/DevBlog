@@ -8,7 +8,7 @@ public class PostDTO {
 
   private long timestamp;
 
-  private PostUserDTO user;
+  private PostUserDTO user = new PostUserDTO();
 
   private String title;
 

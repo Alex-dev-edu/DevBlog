@@ -22,8 +22,9 @@ public class CaptchaCode {
   @Temporal(TemporalType.TIMESTAMP)
   private Date time;
 
+  @Column(columnDefinition = "TINYTEXT")
   private String code;
 
-  @Column(name = "secret_code")
+  @Column(name = "secret_code", columnDefinition = "TINYTEXT")
   private String secretCode;
 }

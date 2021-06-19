@@ -25,8 +25,8 @@ public class User {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int id;
 
-  @Column(name = "is_moderator")
-  private String isModerator;
+  @Column(name = "is_moderator", columnDefinition = "TINYINT")
+  private int isModerator;
 
   @Temporal(TemporalType.TIMESTAMP)
   @Column(name = "reg_time")
@@ -42,6 +42,7 @@ public class User {
   private String code;
 
   @Nullable
+  @Column(columnDefinition = "TEXT")
   private String photo;
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "user")

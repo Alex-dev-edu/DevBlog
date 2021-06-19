@@ -1,7 +1,8 @@
-spring.datasource.url: jdbc:mysql://localhost:3306/devblog?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC
+spring.datasource.url: jdbc:mysql://localhost:3306/devblog?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8&serverTimezone=UTC
 spring.datasource.username: root
 spring.datasource.password: SkillBox-loxi1114
-spring.jpa.hibernate.ddl-auto: update
+spring.jpa.hibernate.ddl-auto: validate
+spring.jpa.show-sql : false
 blog.title : DevHub
 blog.subtitle : Developer stories
 blog.phone : +7 911 234 56 78

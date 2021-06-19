@@ -6,6 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -27,18 +28,21 @@ public class PostComment {
   private int parentId;
 
   @OneToOne
+  @JoinColumn(name = "parent_id")
   private PostComment parent;
 
   @Column(name = "post_id", insertable = false, updatable = false)
   private int postId;
 
   @ManyToOne
+  @JoinColumn(name = "post_id")
   private Post post;
 
   @Column(name = "user_id", insertable = false, updatable = false)
   private int userId;
 
   @ManyToOne
+  @JoinColumn(name = "user_id")
   private User user;
 
   @Temporal(TemporalType.TIMESTAMP)

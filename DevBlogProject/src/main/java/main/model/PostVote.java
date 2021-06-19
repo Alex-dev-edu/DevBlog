@@ -35,5 +35,6 @@ public class PostVote {
   @Temporal(TemporalType.TIMESTAMP)
   private Date time;
 
+  @Column(columnDefinition = "TINYINT")
   private int value;
 }

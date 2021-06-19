@@ -31,8 +31,8 @@ public class Post {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private int id;
 
-  @Column(name = "is_active")
-  private String isActive;
+  @Column(name = "is_active", columnDefinition = "TINYINT")
+  private int isActive;
 
   @Enumerated(EnumType.STRING)
   @Column(columnDefinition = "ENUM('NEW', 'ACCEPTED', 'DECLINED')")
@@ -49,6 +49,7 @@ public class Post {
   private int userId;
 
   @ManyToOne
+  @JoinColumn(name = "user_id")
   private User user;
 
   @Temporal(TemporalType.TIMESTAMP)
@@ -56,6 +57,7 @@ public class Post {
 
   private String title;
 
+  @Column(columnDefinition = "TEXT")
   private String text;
 
   @Column(name = "view_count")
