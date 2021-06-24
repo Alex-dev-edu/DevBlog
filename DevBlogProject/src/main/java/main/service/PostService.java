@@ -17,6 +17,10 @@ import main.repository.PostRepository;
 import main.repository.TagRepository;
 import main.utils.MappingUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -80,30 +84,51 @@ public class PostService {
   public PostResponse getPosts(int offset, int limit, String mode) {
     PostResponse response = new PostResponse();
     List<PostDTO> responsePosts = new ArrayList<>();
-    List<Post> posts = new ArrayList<>();
 
-    postRepository.findAll().forEach(posts::add);
+//    postRepository.findAll().forEach(posts::add);
+//
+//    for (Post post : posts) {
+//      responsePosts.add(MappingUtils.mapPostToPostDTO(post));
+//    }
+//    switch (mode) {
+//      case "popular":
+//        responsePosts.sort(Comparator.comparingInt(PostDTO::getCommentCount));
+//        break;
+//      case "best":
+//        responsePosts.sort(Comparator.comparingInt(PostDTO::getLikeCount));
+//        break;
+//      case "early":
+//        responsePosts.sort(Comparator.comparingLong(PostDTO::getTimestamp).reversed());
+//        break;
+//      default:
+//        responsePosts.sort(Comparator.comparingLong(PostDTO::getTimestamp));
+//    }
+//
+//    response.setCount(responsePosts.size());
+//    response.setPosts(responsePosts.subList(Math.min(responsePosts.size(), offset),
+//        Math.min(responsePosts.size(), offset + limit)));
 
+
+    Pageable pageRequest = PageRequest.of((offset / limit), limit);
+    Page<Post> postsPage = postRepository.findAllRecentPosts(pageRequest);
+    switch (mode) {
+      case "popular":
+        postsPage = postRepository.findAllPostsByCommentCount(pageRequest);
+        break;
+      case "best":
+        postsPage = postRepository.findAllPostsByLikeCount(pageRequest);;
+        break;
+      case "early":
+        postsPage = postRepository.findAllOldPosts(pageRequest);
+        break;
+    }
+
+    List<Post>  posts = postsPage.getContent();
     for (Post post : posts) {
       responsePosts.add(MappingUtils.mapPostToPostDTO(post));
     }
-    switch (mode) {
-      case "popular":
-        responsePosts.sort(Comparator.comparingInt(PostDTO::getCommentCount));
-        break;
-      case "best":
-        responsePosts.sort(Comparator.comparingInt(PostDTO::getLikeCount));
-        break;
-      case "early":
-        responsePosts.sort(Comparator.comparingLong(PostDTO::getTimestamp).reversed());
-        break;
-      default:
-        responsePosts.sort(Comparator.comparingLong(PostDTO::getTimestamp));
-    }
-
-    response.setCount(responsePosts.size());
-    response.setPosts(responsePosts.subList(Math.min(responsePosts.size(), offset),
-        Math.min(responsePosts.size(), offset + limit)));
+    response.setCount(postsPage.getNumber());
+    response.setPosts(responsePosts);
     return response;
   }
 }

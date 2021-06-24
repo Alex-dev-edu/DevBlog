@@ -25,7 +25,7 @@ public class PostComment {
 
   @Nullable
   @Column(name = "parent_id", insertable = false, updatable = false)
-  private int parentId;
+  private Integer parentId;
 
   @OneToOne
   @JoinColumn(name = "parent_id")

@@ -40,7 +40,7 @@ public class Post {
 
   @Nullable
   @Column(name = "moderator_id", insertable = false, updatable = false)
-  private int moderatorId;
+  private Integer moderatorId;
 
   @ManyToOne
   private User moderator;

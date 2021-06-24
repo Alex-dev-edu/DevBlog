@@ -22,7 +22,7 @@ public class MappingUtils {
         likeCount++;
       }
       if (vote.getValue() == -1) {
-        likeCount++;
+        dislikeCount++;
       }
     }
     postDTO.setLikeCount(likeCount);
