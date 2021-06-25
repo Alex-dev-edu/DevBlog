@@ -6,10 +6,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import main.api.response.CalendarResponse;
 import main.api.response.PostResponse;
 import main.api.response.TagResponse;
 import main.api.response.dto.PostDTO;
 import main.api.response.dto.TagDTO;
+import main.api.response.projections.IDateCommentCount;
 import main.model.ModerationStatus;
 import main.model.Post;
 import main.model.Tag;
@@ -85,30 +87,6 @@ public class PostService {
     PostResponse response = new PostResponse();
     List<PostDTO> responsePosts = new ArrayList<>();
 
-//    postRepository.findAll().forEach(posts::add);
-//
-//    for (Post post : posts) {
-//      responsePosts.add(MappingUtils.mapPostToPostDTO(post));
-//    }
-//    switch (mode) {
-//      case "popular":
-//        responsePosts.sort(Comparator.comparingInt(PostDTO::getCommentCount));
-//        break;
-//      case "best":
-//        responsePosts.sort(Comparator.comparingInt(PostDTO::getLikeCount));
-//        break;
-//      case "early":
-//        responsePosts.sort(Comparator.comparingLong(PostDTO::getTimestamp).reversed());
-//        break;
-//      default:
-//        responsePosts.sort(Comparator.comparingLong(PostDTO::getTimestamp));
-//    }
-//
-//    response.setCount(responsePosts.size());
-//    response.setPosts(responsePosts.subList(Math.min(responsePosts.size(), offset),
-//        Math.min(responsePosts.size(), offset + limit)));
-
-
     Pageable pageRequest = PageRequest.of((offset / limit), limit);
     Page<Post> postsPage = postRepository.findAllRecentPosts(pageRequest);
     switch (mode) {
@@ -129,6 +107,31 @@ public class PostService {
     }
     response.setCount(postsPage.getNumber());
     response.setPosts(responsePosts);
+    return response;
+  }
+
+  public PostResponse getPostsByQuery(int offset, int limit, String query){
+    PostResponse response = new PostResponse();
+    List<PostDTO> responsePosts = new ArrayList<>();
+
+    Pageable pageRequest = PageRequest.of((offset / limit), limit);
+    Page<Post> postsPage = postRepository.findAllPostsContaining(query, pageRequest);
+    List<Post>  posts = postsPage.getContent();
+    for (Post post : posts) {
+      responsePosts.add(MappingUtils.mapPostToPostDTO(post));
+    }
+    response.setCount(postsPage.getNumber());
+    response.setPosts(responsePosts);
+    return response;
+  }
+
+  public CalendarResponse getCalendar(int year){
+    CalendarResponse response = new CalendarResponse();
+    response.setYears(postRepository.findAllActiveYears());
+    List<IDateCommentCount> dateList = postRepository.findAllDatesWithPosts(year);
+    for (IDateCommentCount line : dateList){
+      response.getPosts().put(line.getCommentDate().toString(), line.getCommentCount());
+    }
     return response;
   }
 }
