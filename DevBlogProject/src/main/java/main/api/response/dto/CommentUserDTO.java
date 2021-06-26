@@ -3,7 +3,7 @@ package main.api.response.dto;
 import lombok.Data;
 
 @Data
-public class SinglePostUserDTO {
+public class CommentUserDTO {
 
   private int id;
 

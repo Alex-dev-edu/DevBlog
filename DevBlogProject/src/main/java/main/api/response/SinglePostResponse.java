@@ -1,10 +1,12 @@
-package main.api.response.dto;
+package main.api.response;
 
 import java.util.List;
 import lombok.Data;
+import main.api.response.dto.CommentDTO;
+import main.api.response.dto.PostUserDTO;
 
 @Data
-public class SinglePostDTO {
+public class SinglePostResponse {
   private int id;
 
   private long timestamp;

@@ -1,19 +1,23 @@
 package main.service;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Comparator;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import main.api.response.CalendarResponse;
 import main.api.response.PostResponse;
+import main.api.response.SinglePostResponse;
 import main.api.response.TagResponse;
 import main.api.response.dto.PostDTO;
 import main.api.response.dto.TagDTO;
 import main.api.response.projections.IDateCommentCount;
 import main.model.ModerationStatus;
 import main.model.Post;
+import main.model.PostComment;
 import main.model.Tag;
 import main.repository.PostRepository;
 import main.repository.TagRepository;
@@ -41,7 +45,7 @@ public class PostService {
 // maybe livePosts should contain copies of the Post objects (V●ᴥ●V)
     for (Post post : postRepository.findAll()) {
       if (post.getModerationStatus().equals(ModerationStatus.ACCEPTED) && (post.getTime().getTime()
-          >= System.currentTimeMillis())){
+          <= System.currentTimeMillis())){
         livePosts.add(post);
       }
     }
@@ -79,6 +83,7 @@ public class PostService {
       tagDTO.setWeight(k * (tagDTO.getWeight() / livePosts.size()));
     }
 
+    response.setTags(responseTags);
 
     return response;
   }
@@ -131,6 +136,46 @@ public class PostService {
     List<IDateCommentCount> dateList = postRepository.findAllDatesWithPosts(year);
     for (IDateCommentCount line : dateList){
       response.getPosts().put(line.getCommentDate().toString(), line.getCommentCount());
+    }
+    return response;
+  }
+
+  public PostResponse getPostsByDate(int offset, int limit, Date date){
+    PostResponse response = new PostResponse();
+    List<PostDTO> responsePosts = new ArrayList<>();
+
+    Pageable pageRequest = PageRequest.of((offset / limit), limit);
+    Date endDate = new java.sql.Date(date.getTime() + 86400000);
+    Page<Post> postsPage = postRepository.findAllByDate(date, endDate, pageRequest);
+    List<Post>  posts = postsPage.getContent();
+    for (Post post : posts) {
+      responsePosts.add(MappingUtils.mapPostToPostDTO(post));
+    }
+    response.setCount(postsPage.getNumber());
+    response.setPosts(responsePosts);
+    return response;
+  }
+
+  public PostResponse getPostsByTag(int offset, int limit, String tag){
+    PostResponse response = new PostResponse();
+    List<PostDTO> responsePosts = new ArrayList<>();
+
+    Pageable pageRequest = PageRequest.of((offset / limit), limit);
+    Page<Post> postsPage = postRepository.findAllByTagName(tag, pageRequest);
+    List<Post>  posts = postsPage.getContent();
+    for (Post post : posts) {
+      responsePosts.add(MappingUtils.mapPostToPostDTO(post));
+    }
+    response.setCount(postsPage.getNumber());
+    response.setPosts(responsePosts);
+    return response;
+  }
+
+  public List<SinglePostResponse> getPostById(int id){
+    List<SinglePostResponse> response = new ArrayList<>();
+    List<Post> posts = postRepository.findPostById(id);
+    for (Post post : posts){
+      response.add(MappingUtils.mapPostToSinglePostDTO(post));
     }
     return response;
   }
