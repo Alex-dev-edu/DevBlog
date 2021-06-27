@@ -16,7 +16,7 @@ public class SettingsService {
     SettingsResponse response = new SettingsResponse();
     for (GlobalSetting setting : globalSettingRepository.findAll()){
       if (setting.getCode().equals("MULTIUSER_MODE")){
-        response.setMultiuserMode(setting.getValue().equals("YES"));
+        response.setMultiuserMode(setting.getValue().equals("NO"));
       }
       if (setting.getCode().equals("POST_PREMODERATION")){
         response.setPostPremoderation(setting.getValue().equals("YES"));
