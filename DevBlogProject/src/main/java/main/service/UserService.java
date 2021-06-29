@@ -19,7 +19,7 @@ public class UserService {
 
   public RegisterResponse register(RegisterRequest request){
     HashMap<String, String> errors = new HashMap<>();
-    if (userRepository.findAllByEmail(request.getE_mail()).size()!=0){
+    if (userRepository.findAllByEmail(request.getEmail()).size()!=0){
       errors.put("email", "Такой email уже зарегистрирован");
     }
     if ((request.getName()==null)||(request.getName().length()<1)||(userRepository.findAllByName(request.getName()).size()!=0)){
@@ -37,7 +37,7 @@ public class UserService {
     User user = new User();
     user.setName(request.getName());
     user.setPassword(request.getPassword());
-    user.setEmail(request.getE_mail());
+    user.setEmail(request.getEmail());
     user.setRegTime(new Date(System.currentTimeMillis()));
     user.setIsModerator(-1);
     userRepository.save(user);

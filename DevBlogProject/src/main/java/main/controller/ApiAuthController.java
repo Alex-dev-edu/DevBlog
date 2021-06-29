@@ -26,7 +26,7 @@ public class ApiAuthController {
 
   @PostMapping("/auth/register")
   private RegisterResponse authRegister(@RequestBody RegisterRequest request){
-    if (!captchaService.validateCaptcha(request.getCaptcha(), request.getCaptcha_secret())){
+    if (!captchaService.validateCaptcha(request.getCaptcha(), request.getCaptchaSecret())){
       RegisterResponseWithErrors responseWithError = new RegisterResponseWithErrors();
       responseWithError.setResult(false);
       responseWithError.getErrors().put("captcha", "Код с картинки введен неверно");

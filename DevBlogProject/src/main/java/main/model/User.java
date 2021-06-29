@@ -56,4 +56,8 @@ public class User {
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "user")
   private List<PostComment> comments;
+
+  public Role getRole(){
+    return  isModerator == 1 ? Role.MODERATOR : Role.USER;
+  }
 }
