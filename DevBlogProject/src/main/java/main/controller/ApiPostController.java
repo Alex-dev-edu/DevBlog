@@ -1,7 +1,7 @@
 package main.controller;
 
+import java.security.Principal;
 import java.sql.Date;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import main.api.response.CalendarResponse;
@@ -9,6 +9,7 @@ import main.api.response.PostResponse;
 import main.api.response.SinglePostResponse;
 import main.api.response.TagResponse;
 import main.service.PostService;
+import main.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,10 +24,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class ApiPostController {
 
-  private PostService postService;
-
-  public ApiPostController(PostService postService) {
+  private final PostService postService;
+  private final UserService userService;
+  @Autowired
+  public ApiPostController(PostService postService, UserService userService) {
     this.postService = postService;
+    this.userService = userService;
   }
 
   @GetMapping("/post")
@@ -82,5 +85,13 @@ public class ApiPostController {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
     }
     return new ResponseEntity<>(response.get(0), HttpStatus.OK);
+  }
+
+
+  @GetMapping("/post/my")
+  @PreAuthorize("hasAuthority('user:write')")
+  public PostResponse postsMy(Principal principal, @RequestParam int offset, @RequestParam int limit,
+      @RequestParam String status){
+    return userService.getMyPosts(principal, limit, offset, status);
   }
 }

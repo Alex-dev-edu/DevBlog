@@ -47,4 +47,17 @@ public interface PostRepository extends PagingAndSortingRepository<Post, Integer
   @Query(value = "SELECT DATE(time) AS commentDate, COUNT(time) AS commentCount FROM devblog.posts WHERE is_active = 1 AND moderation_status = 'ACCEPTED' AND time < CURRENT_TIMESTAMP AND YEAR(time) = :qyear GROUP BY DATE(time) ORDER BY time",
       nativeQuery = true)
   List<IDateCommentCount> findAllDatesWithPosts(@Param("qyear") int qyear);
+
+  @Query(value = "SELECT p FROM Post p WHERE p.userId = :id AND p.isActive = 0 order by p.time")
+  Page<Post> findAllInactivePostsById(@Param("id") int id, Pageable pageable);
+
+  @Query(value = "SELECT p FROM Post p WHERE p.userId = :id AND p.isActive = 1 and p.moderationStatus = 'NEW' order by p.time")
+  Page<Post> findAllPendingPostsById(@Param("id") int id, Pageable pageable);
+
+  @Query(value = "SELECT p FROM Post p WHERE p.userId = :id AND p.isActive = 1 and p.moderationStatus = 'DECLINED' order by p.time")
+  Page<Post> findAllDeclinedPostsById(@Param("id") int id, Pageable pageable);
+
+  @Query(value = "SELECT p FROM Post p WHERE p.userId = :id AND p.isActive = 1 and p.moderationStatus = 'ACCEPTED' order by p.time")
+  Page<Post> findAllPublishedPostsById(@Param("id") int id, Pageable pageable);
+
 }

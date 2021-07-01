@@ -42,7 +42,7 @@ public class PostService {
     List<TagDTO> responseTags = new ArrayList<>();
     response.setTags(responseTags);
     List<Post> livePosts = new ArrayList<>();
-// maybe livePosts should contain copies of the Post objects (V●ᴥ●V)
+
     for (Post post : postRepository.findAll()) {
       if (post.getModerationStatus().equals(ModerationStatus.ACCEPTED) && (post.getTime().getTime()
           <= System.currentTimeMillis())){
