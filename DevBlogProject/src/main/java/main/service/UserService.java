@@ -1,21 +1,38 @@
 package main.service;
 
+import java.security.Principal;
 import java.util.Date;
 import java.util.HashMap;
+import main.api.request.LoginRequest;
 import main.api.request.RegisterRequest;
+import main.api.response.AuthCheckResponse;
 import main.api.response.RegisterResponse;
 import main.api.response.RegisterResponseWithErrors;
+import main.api.response.dto.AuthCheckUserDTO;
 import main.model.User;
-import main.repository.CaptchaRepository;
 import main.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
 
+  private final UserRepository userRepository;
+
+  private final AuthenticationManager authenticationManager;
+
   @Autowired
-  private UserRepository userRepository;
+  public UserService(UserRepository userRepository,
+      AuthenticationManager authenticationManager) {
+    this.userRepository = userRepository;
+    this.authenticationManager = authenticationManager;
+  }
 
   public RegisterResponse register(RegisterRequest request){
     HashMap<String, String> errors = new HashMap<>();
@@ -46,4 +63,34 @@ public class UserService {
     return response;
   }
 
+  public AuthCheckResponse login(LoginRequest request){
+    Authentication auth = authenticationManager
+        .authenticate(
+            new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+    SecurityContextHolder.getContext().setAuthentication(auth);
+    org.springframework.security.core.userdetails.User user = (org.springframework.security.core.userdetails.User) auth.getPrincipal();
+
+    return getLoginResponse(user.getUsername());
+  }
+
+  public AuthCheckResponse check(Principal principal){
+    return getLoginResponse(principal.getName());
+  }
+
+  private AuthCheckResponse getLoginResponse(String email){
+    User currentUser = userRepository.findByEmail(email)
+        .orElseThrow(() -> new UsernameNotFoundException(email));
+
+    AuthCheckUserDTO userDto = new AuthCheckUserDTO();
+    userDto.setEmail(currentUser.getEmail());
+    userDto.setModeration(currentUser.getIsModerator() == 1);
+    userDto.setId(currentUser.getId());
+    userDto.setName(currentUser.getName());
+    userDto.setSettings(true);
+
+    AuthCheckResponse response = new AuthCheckResponse();
+    response.setUser(userDto);
+    response.setResult(true);
+    return response;
+  }
 }

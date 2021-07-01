@@ -27,17 +27,17 @@ public class ApiGeneralController {
   }
 
   @GetMapping("/settings")
-  private SettingsResponse settings() {
+  public SettingsResponse settings() {
     return settingsService.getGlobalSettings();
   }
 
   @GetMapping("/init")
-  private InitResponse init() {
+  public InitResponse init() {
     return initResponse;
   }
 
   @GetMapping("/auth/captcha")
-  private CaptchaResponse captcha(){
+  public CaptchaResponse captcha(){
     return captchaService.getAndAddCaptcha();
   }
 }
