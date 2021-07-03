@@ -12,6 +12,7 @@ import main.repository.UserRepository;
 import main.service.CaptchaService;
 import main.service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -54,6 +55,12 @@ public class ApiAuthController {
   @PostMapping("/login")
   public ResponseEntity<AuthCheckResponse> login(@RequestBody LoginRequest loginRequest){
     return ResponseEntity.ok(userService.login(loginRequest));
+  }
+
+  @GetMapping("/logout")
+  @PreAuthorize("hasAuthority('user:write')")
+  public ResponseEntity<RegisterResponse> logout(){
+    return ResponseEntity.ok(userService.logout());
   }
 
   @GetMapping("/check")

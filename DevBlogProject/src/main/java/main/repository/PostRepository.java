@@ -16,10 +16,13 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PostRepository extends PagingAndSortingRepository<Post, Integer> {
 
+  @Query(value = "SELECT p FROM Post p WHERE p.isActive = 1 and p.moderationStatus = 'ACCEPTED' and p.time<current_timestamp()")
+  List<Post> findAllLivePosts();
+
   @Query(value = "SELECT p FROM Post p WHERE p.isActive = 1 and p.moderationStatus = 'ACCEPTED' and p.time<current_timestamp()  order by size(p.comments) desc")
   Page<Post> findAllPostsByCommentCount(Pageable pageable);
 
-  @Query(value = "SELECT p FROM Post p left join p.votes vote WHERE vote.value = 1 and p.isActive = 1 and p.moderationStatus = 'ACCEPTED' and p.time<current_timestamp() GROUP BY p order by count(vote) desc")
+  @Query(value = "SELECT p FROM Post p left join p.votes vote WHERE p.isActive = 1 and p.moderationStatus = 'ACCEPTED' and p.time<current_timestamp() GROUP BY p order by SUM(vote.value) desc")
   Page<Post> findAllPostsByLikeCount(Pageable pageable);
 
   @Query(value = "SELECT p FROM Post p WHERE p.isActive = 1 and p.moderationStatus = 'ACCEPTED' and p.time<current_timestamp()  order by p.time desc")

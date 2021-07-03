@@ -1,6 +1,8 @@
 package main.service;
 
 import java.sql.Date;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
 
@@ -41,14 +43,7 @@ public class PostService {
     TagResponse response = new TagResponse();
     List<TagDTO> responseTags = new ArrayList<>();
     response.setTags(responseTags);
-    List<Post> livePosts = new ArrayList<>();
-
-    for (Post post : postRepository.findAll()) {
-      if (post.getModerationStatus().equals(ModerationStatus.ACCEPTED) && (post.getTime().getTime()
-          <= System.currentTimeMillis())){
-        livePosts.add(post);
-      }
-    }
+    List<Post> livePosts = postRepository.findAllLivePosts();
 
     for (Post post : livePosts){
       for (Tag tag : post.getTags()){
@@ -110,7 +105,7 @@ public class PostService {
     for (Post post : posts) {
       responsePosts.add(MappingUtils.mapPostToPostDTO(post));
     }
-    response.setCount(postsPage.getNumber());
+    response.setCount(postsPage.getTotalElements());
     response.setPosts(responsePosts);
     return response;
   }
@@ -125,7 +120,7 @@ public class PostService {
     for (Post post : posts) {
       responsePosts.add(MappingUtils.mapPostToPostDTO(post));
     }
-    response.setCount(postsPage.getNumber());
+    response.setCount(postsPage.getTotalElements());
     response.setPosts(responsePosts);
     return response;
   }
@@ -145,13 +140,17 @@ public class PostService {
     List<PostDTO> responsePosts = new ArrayList<>();
 
     Pageable pageRequest = PageRequest.of((offset / limit), limit);
-    Date endDate = new java.sql.Date(date.getTime() + 86400000);
-    Page<Post> postsPage = postRepository.findAllByDate(date, endDate, pageRequest);
+    java.util.Date startDate = new java.util.Date(date.getTime() + ZoneOffset.systemDefault().getRules().getOffset(
+        Instant.now()).getTotalSeconds()* 1000L);
+    java.util.Date endDate = new java.util.Date(startDate.getTime() + 86400000);
+    System.out.println(startDate.getTime());
+    System.out.println(endDate.getTime());
+    Page<Post> postsPage = postRepository.findAllByDate(startDate, endDate, pageRequest);
     List<Post>  posts = postsPage.getContent();
     for (Post post : posts) {
       responsePosts.add(MappingUtils.mapPostToPostDTO(post));
     }
-    response.setCount(postsPage.getNumber());
+    response.setCount(postsPage.getTotalElements());
     response.setPosts(responsePosts);
     return response;
   }
@@ -166,7 +165,7 @@ public class PostService {
     for (Post post : posts) {
       responsePosts.add(MappingUtils.mapPostToPostDTO(post));
     }
-    response.setCount(postsPage.getNumber());
+    response.setCount(postsPage.getTotalElements());
     response.setPosts(responsePosts);
     return response;
   }

@@ -8,7 +8,7 @@ import main.api.response.dto.PostDTO;
 @Data
 public class PostResponse {
 
-  private int count;
+  private long count;
 
   private List<PostDTO> posts;
 }

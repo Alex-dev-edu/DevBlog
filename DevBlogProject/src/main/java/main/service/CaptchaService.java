@@ -2,8 +2,10 @@ package main.service;
 
 import com.github.cage.Cage;
 import com.github.cage.GCage;
+import com.github.cage.token.RandomTokenGenerator;
 import java.io.ByteArrayOutputStream;
 import java.util.Base64;
+import java.util.Random;
 import java.util.UUID;
 import main.api.response.CaptchaResponse;
 import main.model.CaptchaCode;
@@ -22,7 +24,7 @@ public class CaptchaService {
     CaptchaCode captchaCode = new CaptchaCode();
 
     Cage cage = new GCage();
-    String code = cage.getTokenGenerator().next();
+    String code = new RandomTokenGenerator(new Random(), 5, 1).next();
 
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     try {

@@ -84,6 +84,13 @@ public class UserService {
     return getLoginResponse(user.getUsername());
   }
 
+  public RegisterResponse logout(){
+    SecurityContextHolder.clearContext();
+    RegisterResponse response = new RegisterResponse();
+    response.setResult(true);
+    return response;
+  }
+
   public AuthCheckResponse check(Principal principal){
     return getLoginResponse(principal.getName());
   }
@@ -97,8 +104,10 @@ public class UserService {
     switch (status){
       case "inactive":
         postsPage = postRepository.findAllInactivePostsById(user.getId(), pageRequest);
+        break;
       case "pending":
         postsPage = postRepository.findAllPendingPostsById(user.getId(), pageRequest);
+        break;
       case "declined":
         postsPage = postRepository.findAllDeclinedPostsById(user.getId(), pageRequest);
     }
@@ -109,7 +118,7 @@ public class UserService {
     for (Post post : posts) {
       responsePosts.add(MappingUtils.mapPostToPostDTO(post));
     }
-    response.setCount(postsPage.getNumber());
+    response.setCount(postsPage.getTotalElements());
     response.setPosts(responsePosts);
     return response;
   }
