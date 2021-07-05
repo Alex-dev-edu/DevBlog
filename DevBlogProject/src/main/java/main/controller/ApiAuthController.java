@@ -33,8 +33,7 @@ public class ApiAuthController {
   private final UserService userService;
   private final CaptchaService captchaService;
 
-  public ApiAuthController(UserService userService, CaptchaService captchaService,
-      AuthenticationManager authenticationManager, UserRepository userRepository) {
+  public ApiAuthController(UserService userService, CaptchaService captchaService) {
     this.userService = userService;
     this.captchaService = captchaService;
   }

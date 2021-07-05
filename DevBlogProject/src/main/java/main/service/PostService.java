@@ -1,17 +1,22 @@
 package main.service;
 
+import java.security.Principal;
 import java.sql.Date;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Comparator;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import main.api.request.PostRequest;
 import main.api.response.CalendarResponse;
 import main.api.response.PostResponse;
+import main.api.response.RegisterResponse;
+import main.api.response.RegisterResponseWithErrors;
 import main.api.response.SinglePostResponse;
 import main.api.response.TagResponse;
 import main.api.response.dto.PostDTO;
@@ -21,7 +26,9 @@ import main.model.ModerationStatus;
 import main.model.Post;
 import main.model.PostComment;
 import main.model.Tag;
+import main.model.Tag2Post;
 import main.repository.PostRepository;
+import main.repository.Tag2PostRepository;
 import main.repository.TagRepository;
 import main.utils.MappingUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +45,8 @@ public class PostService {
   private PostRepository postRepository;
   @Autowired
   private TagRepository tagRepository;
+  @Autowired
+  private Tag2PostRepository tag2PostRepository;
 
   public TagResponse getTags(String query) {
     TagResponse response = new TagResponse();
@@ -176,6 +185,51 @@ public class PostService {
     for (Post post : posts){
       response.add(MappingUtils.mapPostToSinglePostDTO(post));
     }
+    return response;
+  }
+
+  public RegisterResponse post(Principal principal, PostRequest request){
+    RegisterResponse response = new RegisterResponse();
+    HashMap<String, String> errors = new HashMap<>();
+    if (request.getText().replaceAll("<.*?>", "").length()<51){
+      errors.put("title", "Заголовок слишком короткий");
+    }
+    if (request.getTitle().length()<4){
+      errors.put("text", "Текст публикации слишком короткий");
+    }
+    if (errors.size()>0){
+      RegisterResponseWithErrors responseWithErrors = new RegisterResponseWithErrors();
+      responseWithErrors.setErrors(errors);
+      responseWithErrors.setResult(false);
+      return responseWithErrors;
+    }
+
+    Post post = new Post();
+    post.setUserId(post.getUserId());
+    post.setIsActive(request.getActive());
+    post.setModerationStatus(ModerationStatus.NEW);
+    post.setTitle(request.getTitle());
+    if (request.getTimestamp()<System.currentTimeMillis()){
+      post.setTime(new java.util.Date(System.currentTimeMillis()));
+    } else {
+      post.setTime(new java.util.Date(request.getTimestamp()));
+    }
+    post.setText(request.getText());
+    post.setViewCount(0);
+    postRepository.save(post);
+    String[] tags = request.getTags();
+    for (String s : tags) {
+      Tag2Post tag2Post = new Tag2Post();
+      tag2Post.setPostId(post.getId());
+      Tag tag = tagRepository.findByName(s).orElse(new Tag());
+      if (tag.getName() == null) {
+        tag.setName(s);
+        tag = tagRepository.save(tag);
+      }
+      tag2Post.setTagId(tag.getId());
+      tag2PostRepository.save(tag2Post);
+    }
+    response.setResult(true);
     return response;
   }
 }

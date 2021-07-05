@@ -4,7 +4,10 @@ package main.repository;
 import java.util.Date;
 import java.util.List;
 import main.api.response.projections.IDateCommentCount;
+import main.api.response.projections.ILikeDislikeStats;
+import main.api.response.projections.IPostsViewsTimeStats;
 import main.model.Post;
+import main.model.PostVote;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
@@ -63,4 +66,15 @@ public interface PostRepository extends PagingAndSortingRepository<Post, Integer
   @Query(value = "SELECT p FROM Post p WHERE p.userId = :id AND p.isActive = 1 and p.moderationStatus = 'ACCEPTED' order by p.time")
   Page<Post> findAllPublishedPostsById(@Param("id") int id, Pageable pageable);
 
+  @Query(value = "SELECT SUM(CASE WHEN (v.value = 1) THEN 1 ELSE 0 END) AS likeCount, SUM(CASE WHEN (v.value = -1) THEN 1 ELSE 0 END) AS dislikeCount FROM Post p left join p.votes v WHERE p.userId = :id and p.isActive = 1 and p.moderationStatus = 'ACCEPTED' and p.time<current_timestamp() GROUP BY p.userId")
+  List<ILikeDislikeStats> findLikeDislikeStatsOfUserId(@Param("id") int id);
+
+  @Query(value = "SELECT COUNT(p) AS postCount, SUM(p.viewCount) AS viewCount, MIN(p.time) as oldestPostDate FROM Post p WHERE p.userId = :id GROUP BY p.userId")
+  List<IPostsViewsTimeStats>findPostViewsTimeStatsOfUser(@Param("id") int id);
+
+  @Query(value = "SELECT SUM(CASE WHEN (v.value = 1) THEN 1 ELSE 0 END) AS likeCount, SUM(CASE WHEN (v.value = -1) THEN 1 ELSE 0 END) AS dislikeCount FROM PostVote v")
+  List<ILikeDislikeStats> findLikeDislikeStatsGlobal();
+
+  @Query(value = "SELECT COUNT(p) AS postCount, SUM(p.viewCount) AS viewCount, MIN(p.time) as oldestPostDate FROM Post p")
+  List<IPostsViewsTimeStats>findPostViewsTimeStatsGlobal();
 }
