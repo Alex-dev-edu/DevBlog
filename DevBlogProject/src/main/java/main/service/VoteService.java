@@ -52,5 +52,29 @@ public class VoteService {
     return response;
   }
 
+  @Transactional
+  public RegisterResponse dislike(Principal principal, int postId){
+    User user = userRepository.findByEmail(principal.getName())
+        .orElseThrow(() -> new UsernameNotFoundException(principal.getName()));
 
+    List<PostVote> vote = voteRepository.findVoteByUserAndPostId(user.getId(), postId);
+    RegisterResponse response = new RegisterResponse();
+    if (vote.size()>=1){
+      if (vote.get(0).getValue()==-1) {
+        response.setResult(false);
+        return response;
+      } else {
+        voteRepository.deleteById(vote.get(0).getId());
+      }
+    }
+
+    PostVote newVote = new PostVote();
+    newVote.setUserId(user.getId());
+    newVote.setPostId(postId);
+    newVote.setValue(-1);
+    newVote.setTime(new Date(System.currentTimeMillis()));
+    voteRepository.save(newVote);
+    response.setResult(true);
+    return response;
+  }
 }

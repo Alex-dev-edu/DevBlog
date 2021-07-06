@@ -109,6 +109,12 @@ public class ApiPostController {
     return voteService.like(principal, post_id);
   }
 
+  @PostMapping("/post/dislike")
+  @PreAuthorize("hasAuthority('user:write')")
+  public RegisterResponse postDislike(Principal principal, @RequestParam int post_id){
+    return voteService.dislike(principal, post_id);
+  }
+
   @PostMapping("/post")
   @PreAuthorize("hasAuthority('user:write')")
   @Transactional
