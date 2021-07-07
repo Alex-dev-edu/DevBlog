@@ -5,5 +5,5 @@ import lombok.Data;
 
 @Data
 public class RegisterResponseWithErrors extends  RegisterResponse{
-   HashMap<String, String> errors = new HashMap<>();
+   private HashMap<String, String> errors = new HashMap<>();
 }

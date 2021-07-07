@@ -6,6 +6,7 @@ import java.util.Calendar;
 import java.util.List;
 import main.api.request.PostRequest;
 import main.api.response.CalendarResponse;
+import main.api.response.PostImageResponse;
 import main.api.response.PostResponse;
 import main.api.response.RegisterResponse;
 import main.api.response.SinglePostResponse;
@@ -23,8 +24,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api")
@@ -120,5 +124,11 @@ public class ApiPostController {
   @Transactional
   public RegisterResponse postNew(Principal principal, @RequestBody PostRequest request){
     return postService.post(principal, request);
+  }
+
+  @RequestMapping(value = "/image", method = RequestMethod.POST, consumes = {"multipart/form-data"})
+  @PreAuthorize("hasAuthority('user:write')")
+  public PostImageResponse postImage(@RequestParam MultipartFile file){
+    return postService.postImage(file);
   }
 }

@@ -1,5 +1,12 @@
 package main.service;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.security.Principal;
 import java.sql.Date;
 import java.time.Instant;
@@ -14,6 +21,8 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import main.api.request.PostRequest;
 import main.api.response.CalendarResponse;
+import main.api.response.PostImageErrorResponse;
+import main.api.response.PostImageResponse;
 import main.api.response.PostResponse;
 import main.api.response.RegisterResponse;
 import main.api.response.RegisterResponseWithErrors;
@@ -31,12 +40,14 @@ import main.repository.PostRepository;
 import main.repository.Tag2PostRepository;
 import main.repository.TagRepository;
 import main.utils.MappingUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class PostService {
@@ -230,6 +241,52 @@ public class PostService {
       tag2PostRepository.save(tag2Post);
     }
     response.setResult(true);
+    return response;
+  }
+
+  public PostImageResponse postImage(MultipartFile file){
+
+    HashMap<String, String> errors = new HashMap<>();
+    if (file.getSize() > 1000000){
+      errors.put("image", "Размер файла превышает допустимый размер");
+    }
+    if ((!Objects.requireNonNull(file.getContentType()).contains("png")) && (!Objects.requireNonNull(file.getContentType()).contains("jpg"))
+        && (!Objects.requireNonNull(file.getContentType()).contains("jpeg"))){
+      errors.put("type", "Допустимы только расширения .png и .jpg/.jpeg");
+    }
+    if (errors.size()>0){
+      PostImageErrorResponse errorResponse = new PostImageErrorResponse();
+      errorResponse.setResult(false);
+      errorResponse.setErrors(errors);
+      return errorResponse;
+    }
+    String generatedString = RandomStringUtils.randomAlphanumeric(11);
+    String pt1 = generatedString.substring(0,2);
+    String pt2 = generatedString.substring(2,4);
+    String pt3 = generatedString.substring(4,6);
+    String fileName = generatedString.substring(6,11);
+    if ((!Objects.requireNonNull(file.getContentType()).contains("png"))){
+      fileName += ".png";
+    } else {
+      fileName += ".jpg";
+    }
+    String destinationDirectory = "/upload/" + pt1 + "/" + pt2 + "/" + pt3;
+    String filePath = destinationDirectory + "/" + fileName;
+    File destination = new File(destinationDirectory);
+    destination.mkdirs();
+    Path path = Paths.get(filePath);
+    try{
+
+      try (InputStream inputStream = file.getInputStream()) {
+      Files.copy(inputStream, path,
+          StandardCopyOption.REPLACE_EXISTING);
+      }
+    }
+    catch (IOException e) {
+      e.printStackTrace();
+    }
+    PostImageResponse response = new PostImageResponse();
+    response.setPath(filePath);
     return response;
   }
 }
