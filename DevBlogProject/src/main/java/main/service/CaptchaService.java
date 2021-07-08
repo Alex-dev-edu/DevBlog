@@ -5,6 +5,7 @@ import com.github.cage.GCage;
 import com.github.cage.token.RandomTokenGenerator;
 import java.io.ByteArrayOutputStream;
 import java.util.Base64;
+import java.util.Date;
 import java.util.Random;
 import java.util.UUID;
 import main.api.response.CaptchaResponse;
@@ -46,6 +47,7 @@ public class CaptchaService {
     String secretCode = UUID.randomUUID().toString().substring(0,32);
     captchaCode.setCode(code);
     captchaCode.setSecretCode(secretCode);
+    captchaCode.setTime(new Date(System.currentTimeMillis()));
     captchaRepository.deleteOldCaptcha();
     captchaRepository.save(captchaCode);
     response.setSecret(secretCode);
@@ -54,8 +56,6 @@ public class CaptchaService {
   }
 
   public boolean validateCaptcha(String code, String secret){
-    System.out.println(code);
-    System.out.println(secret);
     return captchaRepository.findCaptcha(code, secret).size() != 0;
   }
 }

@@ -163,8 +163,6 @@ public class PostService {
     java.util.Date startDate = new java.util.Date(date.getTime() + ZoneOffset.systemDefault().getRules().getOffset(
         Instant.now()).getTotalSeconds()* 1000L);
     java.util.Date endDate = new java.util.Date(startDate.getTime() + 86400000);
-    System.out.println(startDate.getTime());
-    System.out.println(endDate.getTime());
     Page<Post> postsPage = postRepository.findAllByDate(startDate, endDate, pageRequest);
     List<Post>  posts = postsPage.getContent();
     for (Post post : posts) {

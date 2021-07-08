@@ -41,7 +41,7 @@ public class ApiAuthController {
   @PostMapping("/register")
   public RegisterResponse authRegister(@RequestBody RegisterRequest request){
     PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-    request.setPassword(encoder.encode(request.getPassword()));
+    request.setPassword((encoder.encode(request.getPassword())).substring(8));
     if (!captchaService.validateCaptcha(request.getCaptcha(), request.getCaptchaSecret())){
       RegisterResponseWithErrors responseWithError = new RegisterResponseWithErrors();
       responseWithError.setResult(false);

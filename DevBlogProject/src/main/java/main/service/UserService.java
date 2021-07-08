@@ -53,9 +53,6 @@ public class UserService {
     if ((request.getName()==null)||(request.getName().length()<1)||(userRepository.findAllByName(request.getName()).size()!=0)){
       errors.put("name", "Имя указано неверно");
     }
-    if (request.getPassword().length()<6){
-      errors.put("name", "Пароль короче 6-ти символов");
-    }
     if (errors.size()>0){
       RegisterResponseWithErrors responseWithErrors = new RegisterResponseWithErrors();
       responseWithErrors.setErrors(errors);
