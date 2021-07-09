@@ -1,6 +1,7 @@
 package main.controller;
 
 import java.security.Principal;
+import main.api.request.SettingsRequest;
 import main.api.response.CaptchaResponse;
 import main.api.response.CommentResponse;
 import main.api.response.InitResponse;
@@ -11,8 +12,11 @@ import main.service.PostCommentService;
 import main.service.SettingsService;
 import main.service.StatisticsService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -69,5 +73,9 @@ public class ApiGeneralController {
     return commentService.postComment(principal, parent_id, post_id, text);
   }
 
-
+  @PutMapping("/settings")
+  @PreAuthorize("hasAuthority('user:moderate')")
+  public void putSettings(@RequestBody SettingsRequest request){
+    settingsService.setGlobalSettings(request.isMULTIUSER_MODE(), request.isPOST_PREMODERATION(), request.isSTATISTICS_IS_PUBLIC());
+  }
 }
