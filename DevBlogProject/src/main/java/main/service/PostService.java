@@ -12,20 +12,17 @@ import java.sql.Date;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.Comparator;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import main.api.request.PostRequest;
 import main.api.response.CalendarResponse;
 import main.api.response.PostImageErrorResponse;
 import main.api.response.PostImageResponse;
 import main.api.response.PostResponse;
 import main.api.response.RegisterResponse;
-import main.api.response.RegisterResponseWithErrors;
+import main.api.response.RegisterErrorResponse;
 import main.api.response.SinglePostResponse;
 import main.api.response.TagResponse;
 import main.api.response.dto.PostDTO;
@@ -33,31 +30,43 @@ import main.api.response.dto.TagDTO;
 import main.api.response.projections.IDateCommentCount;
 import main.model.ModerationStatus;
 import main.model.Post;
-import main.model.PostComment;
 import main.model.Tag;
 import main.model.Tag2Post;
+import main.model.User;
 import main.repository.PostRepository;
 import main.repository.Tag2PostRepository;
 import main.repository.TagRepository;
+import main.repository.UserRepository;
 import main.utils.MappingUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class PostService {
 
+  private final UserRepository userRepository;
+  private final PostRepository postRepository;
+  private final TagRepository tagRepository;
+  private final Tag2PostRepository tag2PostRepository;
+  private final AuthenticationManager authenticationManager;
+
   @Autowired
-  private PostRepository postRepository;
-  @Autowired
-  private TagRepository tagRepository;
-  @Autowired
-  private Tag2PostRepository tag2PostRepository;
+  public PostService(UserRepository userRepository, PostRepository postRepository,
+      TagRepository tagRepository, Tag2PostRepository tag2PostRepository,
+      AuthenticationManager authenticationManager) {
+    this.userRepository = userRepository;
+    this.postRepository = postRepository;
+    this.tagRepository = tagRepository;
+    this.tag2PostRepository = tag2PostRepository;
+    this.authenticationManager = authenticationManager;
+  }
 
   public TagResponse getTags(String query) {
     TagResponse response = new TagResponse();
@@ -201,20 +210,23 @@ public class PostService {
     RegisterResponse response = new RegisterResponse();
     HashMap<String, String> errors = new HashMap<>();
     if (request.getText().replaceAll("<.*?>", "").length()<51){
-      errors.put("title", "Заголовок слишком короткий");
-    }
-    if (request.getTitle().length()<4){
       errors.put("text", "Текст публикации слишком короткий");
     }
+    if (request.getTitle().length()<4){
+      errors.put("title", "Заголовок слишком короткий");
+    }
     if (errors.size()>0){
-      RegisterResponseWithErrors responseWithErrors = new RegisterResponseWithErrors();
+      RegisterErrorResponse responseWithErrors = new RegisterErrorResponse();
       responseWithErrors.setErrors(errors);
       responseWithErrors.setResult(false);
       return responseWithErrors;
     }
 
+    User user = userRepository.findByEmail(principal.getName())
+        .orElseThrow(() -> new UsernameNotFoundException(principal.getName()));
+
     Post post = new Post();
-    post.setUserId(post.getUserId());
+    post.setUserId(user.getId());
     post.setIsActive(request.getActive());
     post.setModerationStatus(ModerationStatus.NEW);
     post.setTitle(request.getTitle());
@@ -226,6 +238,7 @@ public class PostService {
     post.setText(request.getText());
     post.setViewCount(0);
     postRepository.save(post);
+
     String[] tags = request.getTags();
     for (String s : tags) {
       Tag2Post tag2Post = new Tag2Post();
@@ -238,6 +251,7 @@ public class PostService {
       tag2Post.setTagId(tag.getId());
       tag2PostRepository.save(tag2Post);
     }
+
     response.setResult(true);
     return response;
   }
@@ -285,6 +299,111 @@ public class PostService {
     }
     PostImageResponse response = new PostImageResponse();
     response.setPath(filePath);
+    return response;
+  }
+
+  public RegisterResponse changePost(Principal principal, PostRequest request, int id){
+    RegisterResponse response = new RegisterResponse();
+    HashMap<String, String> errors = new HashMap<>();
+    List<Post> postList = postRepository.findPostById(id);
+    if (request.getText().replaceAll("<.*?>", "").length()<51){
+      errors.put("title", "Заголовок слишком короткий");
+    }
+    if (request.getTitle().length()<4){
+      errors.put("text", "Текст публикации слишком короткий");
+    }
+    if (postList.size()==0){
+      errors.put("id", "Этого поста больше не существует в базе данных");
+    }
+    if (errors.size()>0){
+      RegisterErrorResponse responseWithErrors = new RegisterErrorResponse();
+      responseWithErrors.setErrors(errors);
+      responseWithErrors.setResult(false);
+      return responseWithErrors;
+    }
+
+    User user = userRepository.findByEmail(principal.getName())
+        .orElseThrow(() -> new UsernameNotFoundException(principal.getName()));
+
+    Post post = postList.get(0);
+    post.setIsActive(request.getActive());
+    if (user.getIsModerator()==-1){
+      post.setModerationStatus(ModerationStatus.NEW);
+    }
+    post.setTitle(request.getTitle());
+    if (request.getTimestamp()<System.currentTimeMillis()){
+      post.setTime(new java.util.Date(System.currentTimeMillis()));
+    } else {
+      post.setTime(new java.util.Date(request.getTimestamp()));
+    }
+    post.setText(request.getText());
+    postRepository.save(post);
+
+    String[] tags = request.getTags();
+    for (String s : tags) {
+      Tag2Post tag2Post = new Tag2Post();
+      tag2Post.setPostId(post.getId());
+      Tag tag = tagRepository.findByName(s).orElse(new Tag());
+      if (tag.getName() == null) {
+        tag.setName(s);
+        tag = tagRepository.save(tag);
+      }
+      tag2Post.setTagId(tag.getId());
+      tag2PostRepository.save(tag2Post);
+    }
+    response.setResult(true);
+    return response;
+  }
+
+  public PostResponse getModerationPosts(Principal principal, int offset, int limit, String status){
+    PostResponse response = new PostResponse();
+    List<PostDTO> responsePosts = new ArrayList<>();
+    User user = userRepository.findByEmail(principal.getName())
+        .orElseThrow(() -> new UsernameNotFoundException(principal.getName()));
+
+    Pageable pageRequest = PageRequest.of((offset / limit), limit);
+    Page<Post> postsPage = postRepository.findAllNewPosts(pageRequest);
+    switch (status) {
+      case "declined":
+        postsPage = postRepository.findAllDeclinedPostsByModId(user.getId(), pageRequest);
+        break;
+      case "accepted":
+        postsPage = postRepository.findAllAcceptedPostsByModId(user.getId(), pageRequest);
+        break;
+    }
+
+    List<Post>  posts = postsPage.getContent();
+    for (Post post : posts) {
+      responsePosts.add(MappingUtils.mapPostToPostDTO(post));
+    }
+    response.setCount(postsPage.getTotalElements());
+    response.setPosts(responsePosts);
+    return response;
+  }
+
+  public RegisterResponse postModeration(Principal principal, int postId, String decision){
+    RegisterResponse response = new RegisterResponse();
+    User user = userRepository.findByEmail(principal.getName())
+        .orElseThrow(() -> new UsernameNotFoundException(principal.getName()));
+
+    if (user.getIsModerator()!=1){
+      response.setResult(false);
+      return response;
+    }
+
+    List<Post> postList = postRepository.findPostById(postId);
+    Post post = postList.get(0);
+
+    switch (decision) {
+      case "decline":
+        post.setModerationStatus(ModerationStatus.DECLINED);
+        break;
+      case "accept":
+        post.setModerationStatus(ModerationStatus.ACCEPTED);
+        break;
+    }
+    post.setModeratorId(user.getId());
+    response.setResult(true);
     return response;
   }
 }

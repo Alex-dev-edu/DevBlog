@@ -77,4 +77,13 @@ public interface PostRepository extends PagingAndSortingRepository<Post, Integer
 
   @Query(value = "SELECT COUNT(p) AS postCount, SUM(p.viewCount) AS viewCount, MIN(p.time) as oldestPostDate FROM Post p")
   List<IPostsViewsTimeStats>findPostViewsTimeStatsGlobal();
+
+  @Query(value = "SELECT p FROM Post p WHERE p.isActive = 1 and p.moderationStatus = 'NEW' order by p.time")
+  Page<Post> findAllNewPosts(Pageable pageable);
+
+  @Query(value = "SELECT p FROM Post p WHERE p.moderatorId = :modId AND p.isActive = 1 and p.moderationStatus = 'ACCEPTED' order by p.time")
+  Page<Post> findAllAcceptedPostsByModId(@Param("modId") int modId, Pageable pageable);
+
+  @Query(value = "SELECT p FROM Post p WHERE p.moderatorId = :modId AND p.isActive = 1 and p.moderationStatus = 'DECLINED' order by p.time")
+  Page<Post> findAllDeclinedPostsByModId(@Param("modId") int modId, Pageable pageable);
 }

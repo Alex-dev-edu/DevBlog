@@ -4,6 +4,6 @@ import java.util.HashMap;
 import lombok.Data;
 
 @Data
-public class RegisterResponseWithErrors extends  RegisterResponse{
+public class RegisterErrorResponse extends  RegisterResponse{
    private HashMap<String, String> errors = new HashMap<>();
 }

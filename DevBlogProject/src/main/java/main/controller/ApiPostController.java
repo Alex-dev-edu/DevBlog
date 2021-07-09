@@ -131,4 +131,25 @@ public class ApiPostController {
   public PostImageResponse postImage(@RequestParam MultipartFile file){
     return postService.postImage(file);
   }
+
+  @RequestMapping(value = "/post/{id}", method = RequestMethod.PUT)
+  @PreAuthorize("hasAuthority('user:write')")
+  @Transactional
+  public RegisterResponse postUpdate(Principal principal, @RequestBody PostRequest request, @PathVariable int id){
+    return postService.changePost(principal, request, id);
+  }
+
+  @GetMapping("/post/moderation")
+  public PostResponse getModeration(Principal principal,
+      @RequestParam int offset, @RequestParam int limit, @RequestParam String status)
+  {
+    return postService.getModerationPosts(principal, offset, limit, status);
+  }
+
+  @PostMapping("/post/moderation")
+  public RegisterResponse postModeration(Principal principal,
+      @RequestParam int post_id, @RequestParam String decision)
+  {
+    return postService.postModeration(principal, post_id, decision);
+  }
 }

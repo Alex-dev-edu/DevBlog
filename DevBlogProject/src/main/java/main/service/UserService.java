@@ -10,7 +10,7 @@ import main.api.request.RegisterRequest;
 import main.api.response.AuthCheckResponse;
 import main.api.response.PostResponse;
 import main.api.response.RegisterResponse;
-import main.api.response.RegisterResponseWithErrors;
+import main.api.response.RegisterErrorResponse;
 import main.api.response.dto.AuthCheckUserDTO;
 import main.api.response.dto.PostDTO;
 import main.model.Post;
@@ -54,7 +54,7 @@ public class UserService {
       errors.put("name", "Имя указано неверно");
     }
     if (errors.size()>0){
-      RegisterResponseWithErrors responseWithErrors = new RegisterResponseWithErrors();
+      RegisterErrorResponse responseWithErrors = new RegisterErrorResponse();
       responseWithErrors.setErrors(errors);
       responseWithErrors.setResult(false);
       return responseWithErrors;
