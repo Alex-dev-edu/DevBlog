@@ -4,7 +4,10 @@ import java.security.Principal;
 import java.sql.Date;
 import java.util.Calendar;
 import java.util.List;
+import main.api.request.ImageRequest;
+import main.api.request.ModerationRequest;
 import main.api.request.PostRequest;
+import main.api.request.VoteRequest;
 import main.api.response.CalendarResponse;
 import main.api.response.PostImageResponse;
 import main.api.response.PostResponse;
@@ -109,14 +112,14 @@ public class ApiPostController {
 
   @PostMapping("/post/like")
   @PreAuthorize("hasAuthority('user:write')")
-  public RegisterResponse postLike(Principal principal, @RequestParam int post_id){
-    return voteService.like(principal, post_id);
+  public RegisterResponse postLike(Principal principal, @RequestBody VoteRequest request){
+    return voteService.like(principal, request.getPost_id());
   }
 
   @PostMapping("/post/dislike")
   @PreAuthorize("hasAuthority('user:write')")
-  public RegisterResponse postDislike(Principal principal, @RequestParam int post_id){
-    return voteService.dislike(principal, post_id);
+  public RegisterResponse postDislike(Principal principal, @RequestBody VoteRequest request){
+    return voteService.dislike(principal, request.getPost_id());
   }
 
   @PostMapping("/post")
@@ -126,10 +129,10 @@ public class ApiPostController {
     return postService.post(principal, request);
   }
 
-  @RequestMapping(value = "/image", method = RequestMethod.POST, consumes = {"multipart/form-data"})
+  @RequestMapping(value = "/image", method = RequestMethod.POST)
   @PreAuthorize("hasAuthority('user:write')")
-  public PostImageResponse postImage(@RequestParam MultipartFile file){
-    return postService.postImage(file);
+  public PostImageResponse postImage(@RequestPart MultipartFile image){
+    return postService.postImage(image);
   }
 
   @RequestMapping(value = "/post/{id}", method = RequestMethod.PUT)
@@ -146,10 +149,10 @@ public class ApiPostController {
     return postService.getModerationPosts(principal, offset, limit, status);
   }
 
-  @PostMapping("/post/moderation")
+  @PostMapping("/moderation")
   public RegisterResponse postModeration(Principal principal,
-      @RequestParam int post_id, @RequestParam String decision)
+      @RequestBody ModerationRequest request)
   {
-    return postService.postModeration(principal, post_id, decision);
+    return postService.postModeration(principal, request.getPost_id(), request.getDecision());
   }
 }

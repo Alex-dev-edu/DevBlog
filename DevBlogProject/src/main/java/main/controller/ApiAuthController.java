@@ -1,8 +1,10 @@
 package main.controller;
 
 import java.security.Principal;
+import javax.servlet.http.HttpServletRequest;
 import main.api.request.LoginRequest;
 import main.api.request.RegisterRequest;
+import main.api.request.RestorePasswordRequest;
 import main.api.response.AuthCheckResponse;
 import main.api.response.RegisterResponse;
 import main.api.response.RegisterErrorResponse;
@@ -69,5 +71,10 @@ public class ApiAuthController {
       return new AuthCheckResponse();
     }
     return userService.check(principal);
+  }
+
+  @PostMapping("/restore")
+  public RegisterResponse restorePass(HttpServletRequest servletRequest, @RequestBody RestorePasswordRequest request){
+    return userService.restoreGetCode(servletRequest.getRequestURL().toString(), request.getEmail());
   }
 }

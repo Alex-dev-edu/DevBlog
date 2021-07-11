@@ -226,7 +226,7 @@ public class PostService {
         .orElseThrow(() -> new UsernameNotFoundException(principal.getName()));
 
     Post post = new Post();
-    post.setUserId(user.getId());
+    post.setUser(user);
     post.setIsActive(request.getActive());
     post.setModerationStatus(ModerationStatus.NEW);
     post.setTitle(request.getTitle());
@@ -242,13 +242,13 @@ public class PostService {
     String[] tags = request.getTags();
     for (String s : tags) {
       Tag2Post tag2Post = new Tag2Post();
-      tag2Post.setPostId(post.getId());
+      tag2Post.setPost(post);
       Tag tag = tagRepository.findByName(s).orElse(new Tag());
       if (tag.getName() == null) {
         tag.setName(s);
         tag = tagRepository.save(tag);
       }
-      tag2Post.setTagId(tag.getId());
+      tag2Post.setTag(tag);
       tag2PostRepository.save(tag2Post);
     }
 
@@ -342,13 +342,13 @@ public class PostService {
     String[] tags = request.getTags();
     for (String s : tags) {
       Tag2Post tag2Post = new Tag2Post();
-      tag2Post.setPostId(post.getId());
+      tag2Post.setPost(post);
       Tag tag = tagRepository.findByName(s).orElse(new Tag());
       if (tag.getName() == null) {
         tag.setName(s);
         tag = tagRepository.save(tag);
       }
-      tag2Post.setTagId(tag.getId());
+      tag2Post.setTag(tag);
       tag2PostRepository.save(tag2Post);
     }
     response.setResult(true);
@@ -402,7 +402,8 @@ public class PostService {
         post.setModerationStatus(ModerationStatus.ACCEPTED);
         break;
     }
-    post.setModeratorId(user.getId());
+    post.setModerator(user);
+    postRepository.save(post);
     response.setResult(true);
     return response;
   }

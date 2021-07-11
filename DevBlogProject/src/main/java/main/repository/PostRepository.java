@@ -46,11 +46,11 @@ public interface PostRepository extends PagingAndSortingRepository<Post, Integer
   @Query(value = "SELECT p FROM Post p WHERE p.id = :id")
   List<Post> findPostById(@Param("id") int id);
 
-  @Query(value = "SELECT DISTINCT YEAR(time) FROM devblog.posts WHERE is_active = 1 AND moderation_status = 'ACCEPTED' AND time < CURRENT_TIMESTAMP ORDER BY time",
+  @Query(value = "SELECT DISTINCT YEAR(time) FROM posts WHERE is_active = 1 AND moderation_status = 'ACCEPTED' AND time < CURRENT_TIMESTAMP ORDER BY YEAR(time)",
       nativeQuery = true)
   List<Integer> findAllActiveYears();
 
-  @Query(value = "SELECT DATE(time) AS commentDate, COUNT(time) AS commentCount FROM devblog.posts WHERE is_active = 1 AND moderation_status = 'ACCEPTED' AND time < CURRENT_TIMESTAMP AND YEAR(time) = :qyear GROUP BY DATE(time) ORDER BY time",
+  @Query(value = "SELECT DATE(time) AS commentDate, COUNT(time) AS commentCount FROM posts WHERE is_active = 1 AND moderation_status = 'ACCEPTED' AND time < CURRENT_TIMESTAMP AND YEAR(time) = :qyear GROUP BY DATE(time) ORDER BY DATE(time)",
       nativeQuery = true)
   List<IDateCommentCount> findAllDatesWithPosts(@Param("qyear") int qyear);
 

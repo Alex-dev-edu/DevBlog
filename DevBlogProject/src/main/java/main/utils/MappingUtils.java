@@ -20,8 +20,10 @@ public class MappingUtils {
     postDTO.getUser().setId(post.getUser().getId());
     postDTO.getUser().setName(post.getUser().getName());
     postDTO.setTitle(post.getTitle());
-    String announce = ((post.getText()).substring(0, Math.min(post.getText().length(), 150))).replaceAll("<.*?>", "")  + "...";
-    postDTO.setAnnounce(announce);
+
+    String announce = post.getText().replaceAll("<.*?>", "");
+    announce = announce.replaceAll("&nbsp;", "");
+    postDTO.setAnnounce(announce.substring(0, Math.min(post.getText().length(), 150))   + "...");
     int likeCount = 0;
     int dislikeCount = 0;
     for (PostVote vote : post.getVotes()) {
