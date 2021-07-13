@@ -1,5 +1,6 @@
 package main.service;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,6 +17,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import javax.imageio.ImageIO;
+import main.api.request.PostProfileRequest;
 import main.api.request.PostRequest;
 import main.api.response.CalendarResponse;
 import main.api.response.PostImageErrorResponse;
@@ -45,6 +48,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -256,7 +261,7 @@ public class PostService {
     return response;
   }
 
-  public PostImageResponse postImage(MultipartFile file){
+  public PostImageResponse postImage(MultipartFile file, boolean cut){
 
     HashMap<String, String> errors = new HashMap<>();
     if (file.getSize() > 1000000){
@@ -277,7 +282,7 @@ public class PostService {
     String pt2 = generatedString.substring(2,4);
     String pt3 = generatedString.substring(4,6);
     String fileName = generatedString.substring(6,11);
-    if ((!Objects.requireNonNull(file.getContentType()).contains("png"))){
+    if (file.getContentType().contains("png")){
       fileName += ".png";
     } else {
       fileName += ".jpg";
@@ -288,10 +293,29 @@ public class PostService {
     destination.mkdirs();
     Path path = Paths.get(filePath);
     try{
+      if (!cut) {
+        try (InputStream inputStream = file.getInputStream()) {
+          Files.copy(inputStream, path,
+              StandardCopyOption.REPLACE_EXISTING);
+        }
+      } else{
+        File tmpFile = new File(destinationDirectory + "/tmp" + fileName);
+        File newFile = new File(filePath);
+        file.transferTo(tmpFile);
+        BufferedImage image = ImageIO.read(tmpFile);
+        BufferedImage newImage = new BufferedImage(
+            36,36, BufferedImage.TYPE_INT_RGB
+        );
 
-      try (InputStream inputStream = file.getInputStream()) {
-      Files.copy(inputStream, path,
-          StandardCopyOption.REPLACE_EXISTING);
+        int widthStep = image.getWidth() / 36;
+        int heightStep = image.getHeight() / 36;
+        for (int x = 0; x < 36; x++) {
+          for (int y = 0; y < 36; y++) {
+            int rgb = image.getRGB(x * widthStep, y * heightStep);
+            newImage.setRGB(x, y, rgb);
+          }
+        }
+        ImageIO.write(newImage, fileName.substring(fileName.length()-3), newFile);
       }
     }
     catch (IOException e) {
@@ -404,6 +428,71 @@ public class PostService {
     }
     post.setModerator(user);
     postRepository.save(post);
+    response.setResult(true);
+    return response;
+  }
+
+  public RegisterResponse postMyProfile(Principal principal, PostProfileRequest request){
+    RegisterResponse response = new RegisterResponse();
+    User user = userRepository.findByEmail(principal.getName())
+        .orElseThrow(() -> new UsernameNotFoundException(principal.getName()));
+    HashMap<String, String> errors = new HashMap<>();
+    if ((request.getPassword()!=null) && (request.getPassword().length()<6)){
+      errors.put("password", "Пароль короче 6-ти символов");
+    }
+    if (request.getName()!=null){
+      List<Integer> userList = userRepository.findAllByName(request.getName());
+      if ((request.getName().length()<2) || ((userList.size()>0) && (userList.get(0) != user.getId()))){
+        errors.put("name", "Имя указано неверно");
+      }
+    }
+    if (request.getEmail()!=null){
+      List<Integer> userList = userRepository.findAllByEmail(request.getEmail());
+      if ((userList.size()>0) && (userList.get(0) != user.getId())){
+        errors.put("email", "Этот email уже зарегистрирован");
+      }
+    }
+    if (request.getPhoto()!=null){
+      if (request.getPhoto().getSize() > 1000000){
+        errors.put("photo", "Этот email уже зарегистрирован");
+      } else {
+        if ((!Objects.requireNonNull(request.getPhoto().getContentType()).contains("png")) && (!Objects.requireNonNull(request.getPhoto().getContentType()).contains("jpg"))
+            && (!Objects.requireNonNull(request.getPhoto().getContentType()).contains("jpeg"))) {
+          errors.put("photo", "Допустимы только расширения .png и .jpg/.jpeg");
+        }
+      }
+    }
+    if (errors.size()>0){
+      RegisterErrorResponse responseWithErrors = new RegisterErrorResponse();
+      responseWithErrors.setErrors(errors);
+      responseWithErrors.setResult(false);
+      return responseWithErrors;
+    }
+
+    if (request.getRemovePhoto()!=null){
+      if (user.getPhoto()!=null){
+        File photo = new File(user.getPhoto());
+        photo.delete();
+        user.setPhoto(null);
+      }
+
+      if (request.getRemovePhoto()==0){
+        user.setPhoto(postImage(request.getPhoto(), true).getPath());
+      }
+    }
+
+    if (request.getEmail()!=null){
+      user.setEmail(request.getEmail());
+    }
+    if (request.getName()!=null){
+      user.setName(request.getName());
+    }
+    if (request.getPassword()!=null){
+      PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+      request.setPassword((encoder.encode(request.getPassword())).substring(8));
+      user.setPassword(request.getPassword());
+    }
+    userRepository.save(user);
     response.setResult(true);
     return response;
   }

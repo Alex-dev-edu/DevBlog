@@ -165,4 +165,32 @@ public class UserService {
     mailSender.send(message);
     return response;
   }
+
+  public RegisterResponse validateCode(String code, String newPassword){
+    RegisterResponse response = new RegisterResponse();
+    List<User> userList = userRepository.findAllByCode(code);
+
+    HashMap<String, String> errors = new HashMap<>();
+    if (userList.size()==0){
+      errors.put("code", "Ссылка для восстановления пароля устарела. <a href=\\\"/auth/restore\\\">Запросить ссылку снова</a>");
+    }
+    if (newPassword.length()<6){
+      errors.put("password", "Пароль короче 6ти символов");
+    }
+    if (userList.size()>1){
+      errors.put("security", "Сбой в системе кодов верификации. <a href=\\\"/auth/restore\\\">Запросить ссылку снова</a>");
+    }
+    if (errors.size()>0){
+      RegisterErrorResponse responseWithErrors = new RegisterErrorResponse();
+      responseWithErrors.setErrors(errors);
+      responseWithErrors.setResult(false);
+      return responseWithErrors;
+    }
+
+    User user = userList.get(0);
+    user.setPassword(newPassword);
+    userRepository.save(user);
+    response.setResult(true);
+    return response;
+  }
 }

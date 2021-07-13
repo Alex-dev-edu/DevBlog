@@ -5,6 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 import main.api.request.LoginRequest;
 import main.api.request.RegisterRequest;
 import main.api.request.RestorePasswordRequest;
+import main.api.request.RestorePasswordValidationRequest;
 import main.api.response.AuthCheckResponse;
 import main.api.response.RegisterResponse;
 import main.api.response.RegisterErrorResponse;
@@ -76,5 +77,16 @@ public class ApiAuthController {
   @PostMapping("/restore")
   public RegisterResponse restorePass(HttpServletRequest servletRequest, @RequestBody RestorePasswordRequest request){
     return userService.restoreGetCode(servletRequest.getRequestURL().toString(), request.getEmail());
+  }
+
+  @PostMapping("/password")
+  public RegisterResponse postPassword(@RequestBody RestorePasswordValidationRequest request){
+    if (!captchaService.validateCaptcha(request.getCaptcha(), request.getCaptchaSecret())){
+      RegisterErrorResponse responseWithError = new RegisterErrorResponse();
+      responseWithError.setResult(false);
+      responseWithError.getErrors().put("captcha", "Код с картинки введен неверно");
+      return responseWithError;
+    }
+    return userService.validateCode(request.getCode(), request.getPassword());
   }
 }

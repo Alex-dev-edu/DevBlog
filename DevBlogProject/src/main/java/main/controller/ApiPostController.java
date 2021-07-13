@@ -6,6 +6,7 @@ import java.util.Calendar;
 import java.util.List;
 import main.api.request.ImageRequest;
 import main.api.request.ModerationRequest;
+import main.api.request.PostProfileRequest;
 import main.api.request.PostRequest;
 import main.api.request.VoteRequest;
 import main.api.response.CalendarResponse;
@@ -132,7 +133,7 @@ public class ApiPostController {
   @RequestMapping(value = "/image", method = RequestMethod.POST)
   @PreAuthorize("hasAuthority('user:write')")
   public PostImageResponse postImage(@RequestPart MultipartFile image){
-    return postService.postImage(image);
+    return postService.postImage(image, false);
   }
 
   @RequestMapping(value = "/post/{id}", method = RequestMethod.PUT)
@@ -154,5 +155,11 @@ public class ApiPostController {
       @RequestBody ModerationRequest request)
   {
     return postService.postModeration(principal, request.getPost_id(), request.getDecision());
+  }
+
+  @PostMapping("/profile/my")
+  public RegisterResponse postProfile(Principal principal,
+      @RequestBody PostProfileRequest request){
+    return postService.postMyProfile(principal, request);
   }
 }
