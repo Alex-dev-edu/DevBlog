@@ -288,6 +288,7 @@ public class PostService {
       fileName += ".jpg";
     }
     String destinationDirectory = "/upload/" + pt1 + "/" + pt2 + "/" + pt3;
+    System.out.println(destinationDirectory);
     String filePath = destinationDirectory + "/" + fileName;
     File destination = new File(destinationDirectory);
     destination.mkdirs();
@@ -432,32 +433,34 @@ public class PostService {
     return response;
   }
 
-  public RegisterResponse postMyProfile(Principal principal, PostProfileRequest request){
+  public RegisterResponse postMyProfile(Principal principal, String email, String password,
+      String name, Integer removePhoto, MultipartFile photo){
     RegisterResponse response = new RegisterResponse();
     User user = userRepository.findByEmail(principal.getName())
         .orElseThrow(() -> new UsernameNotFoundException(principal.getName()));
     HashMap<String, String> errors = new HashMap<>();
-    if ((request.getPassword()!=null) && (request.getPassword().length()<6)){
+
+    if ((password!=null) && (password.length()<6)){
       errors.put("password", "Пароль короче 6-ти символов");
     }
-    if (request.getName()!=null){
-      List<Integer> userList = userRepository.findAllByName(request.getName());
-      if ((request.getName().length()<2) || ((userList.size()>0) && (userList.get(0) != user.getId()))){
+    if (name!=null){
+      List<Integer> userList = userRepository.findAllByName(name);
+      if ((name.length()<2) || ((userList.size()>0) && (userList.get(0) != user.getId()))){
         errors.put("name", "Имя указано неверно");
       }
     }
-    if (request.getEmail()!=null){
-      List<Integer> userList = userRepository.findAllByEmail(request.getEmail());
+    if (email!=null){
+      List<Integer> userList = userRepository.findAllByEmail(email);
       if ((userList.size()>0) && (userList.get(0) != user.getId())){
         errors.put("email", "Этот email уже зарегистрирован");
       }
     }
-    if (request.getPhoto()!=null){
-      if (request.getPhoto().getSize() > 1000000){
-        errors.put("photo", "Этот email уже зарегистрирован");
+    if (photo!=null){
+      if (photo.getSize() > 1000000){
+        errors.put("photo", "Превышен допустимый размер фотографии");
       } else {
-        if ((!Objects.requireNonNull(request.getPhoto().getContentType()).contains("png")) && (!Objects.requireNonNull(request.getPhoto().getContentType()).contains("jpg"))
-            && (!Objects.requireNonNull(request.getPhoto().getContentType()).contains("jpeg"))) {
+        if ((!Objects.requireNonNull(photo.getContentType()).contains("png")) && (!Objects.requireNonNull(photo.getContentType()).contains("jpg"))
+            && (!Objects.requireNonNull(photo.getContentType()).contains("jpeg"))) {
           errors.put("photo", "Допустимы только расширения .png и .jpg/.jpeg");
         }
       }
@@ -469,29 +472,93 @@ public class PostService {
       return responseWithErrors;
     }
 
-    if (request.getRemovePhoto()!=null){
+    if (removePhoto!=null){
       if (user.getPhoto()!=null){
-        File photo = new File(user.getPhoto());
-        photo.delete();
+        File oldPhoto = new File(user.getPhoto());
+        oldPhoto.delete();
         user.setPhoto(null);
       }
 
-      if (request.getRemovePhoto()==0){
-        user.setPhoto(postImage(request.getPhoto(), true).getPath());
+      if (removePhoto==0){
+        user.setPhoto(postImage(photo, true).getPath());
       }
+    } else {
+      System.out.println("removePhoto=null");
     }
 
-    if (request.getEmail()!=null){
-      user.setEmail(request.getEmail());
+    if (email!=null){
+      user.setEmail(email);
+    }else {
+      System.out.println("email=null");
     }
-    if (request.getName()!=null){
-      user.setName(request.getName());
+    if (name!=null){
+      user.setName(name);
+    }else {
+      System.out.println("name=null");
     }
-    if (request.getPassword()!=null){
+    if (password!=null){
       PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-      request.setPassword((encoder.encode(request.getPassword())).substring(8));
-      user.setPassword(request.getPassword());
+      password = (encoder.encode(password)).substring(8);
+      user.setPassword(password);
+    }else {
+      System.out.println("password=null");
     }
+
+//    if ((request.getPassword()!=null) && (request.getPassword().length()<6)){
+//      errors.put("password", "Пароль короче 6-ти символов");
+//    }
+//    if (request.getName()!=null){
+//      List<Integer> userList = userRepository.findAllByName(request.getName());
+//      if ((request.getName().length()<2) || ((userList.size()>0) && (userList.get(0) != user.getId()))){
+//        errors.put("name", "Имя указано неверно");
+//      }
+//    }
+//    if (request.getEmail()!=null){
+//      List<Integer> userList = userRepository.findAllByEmail(request.getEmail());
+//      if ((userList.size()>0) && (userList.get(0) != user.getId())){
+//        errors.put("email", "Этот email уже зарегистрирован");
+//      }
+//    }
+//    if (photo!=null){
+//      if (photo.getSize() > 1000000){
+//        errors.put("photo", "Превышен допустимый размер фотографии");
+//      } else {
+//        if ((!Objects.requireNonNull(photo.getContentType()).contains("png")) && (!Objects.requireNonNull(photo.getContentType()).contains("jpg"))
+//            && (!Objects.requireNonNull(photo.getContentType()).contains("jpeg"))) {
+//          errors.put("photo", "Допустимы только расширения .png и .jpg/.jpeg");
+//        }
+//      }
+//    }
+//    if (errors.size()>0){
+//      RegisterErrorResponse responseWithErrors = new RegisterErrorResponse();
+//      responseWithErrors.setErrors(errors);
+//      responseWithErrors.setResult(false);
+//      return responseWithErrors;
+//    }
+//
+//    if (request.getRemovePhoto()!=null){
+//      if (user.getPhoto()!=null){
+//        File oldPhoto = new File(user.getPhoto());
+//        oldPhoto.delete();
+//        user.setPhoto(null);
+//      }
+//
+//      if (request.getRemovePhoto()==0){
+//        user.setPhoto(postImage(photo, true).getPath());
+//      }
+//    }
+//
+//    if (request.getEmail()!=null){
+//      user.setEmail(request.getEmail());
+//    }
+//    if (request.getName()!=null){
+//      user.setName(request.getName());
+//    }
+//    if (request.getPassword()!=null){
+//      PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+//      request.setPassword((encoder.encode(request.getPassword())).substring(8));
+//      user.setPassword(request.getPassword());
+//    }
     userRepository.save(user);
     response.setResult(true);
     return response;

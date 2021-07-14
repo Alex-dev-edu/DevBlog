@@ -144,6 +144,7 @@ public class ApiPostController {
   }
 
   @GetMapping("/post/moderation")
+  @PreAuthorize("hasAuthority('user:moderate')")
   public PostResponse getModeration(Principal principal,
       @RequestParam int offset, @RequestParam int limit, @RequestParam String status)
   {
@@ -151,6 +152,7 @@ public class ApiPostController {
   }
 
   @PostMapping("/moderation")
+  @PreAuthorize("hasAuthority('user:moderate')")
   public RegisterResponse postModeration(Principal principal,
       @RequestBody ModerationRequest request)
   {
@@ -158,8 +160,19 @@ public class ApiPostController {
   }
 
   @PostMapping("/profile/my")
+  @PreAuthorize("hasAuthority('user:write')")
   public RegisterResponse postProfile(Principal principal,
-      @RequestBody PostProfileRequest request){
-    return postService.postMyProfile(principal, request);
+//      @RequestPart(required = false) String email,
+//      @RequestPart(required = false) String password, @RequestPart(required = false) Integer removePhoto,
+//      @RequestPart(required = false) String name,
+      @RequestPart PostProfileRequest request,
+      @RequestPart(required = false) MultipartFile photo){
+    if (photo.isEmpty()){
+      System.out.println("photo is empty");
+    }
+    return postService.postMyProfile(principal,
+        request.getEmail(), request.getPassword(), request.getName(), request.getRemovePhoto(),
+//        email, password, name, removePhoto,
+        photo);
   }
 }

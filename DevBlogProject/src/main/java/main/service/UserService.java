@@ -163,6 +163,7 @@ public class UserService {
     System.out.println(newURL);
     message.setText("This link will restore your password at devblog: " + newURL);
     mailSender.send(message);
+    response.setResult(true);
     return response;
   }
 
