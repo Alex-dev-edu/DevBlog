@@ -23,7 +23,7 @@ public class MappingUtils {
 
     String announce = post.getText().replaceAll("<.*?>", "");
     announce = announce.replaceAll("&nbsp;", "");
-    postDTO.setAnnounce(announce.substring(0, Math.min(post.getText().length(), 150))   + "...");
+    postDTO.setAnnounce(announce.substring(0, Math.min(announce.length(), 150))   + "...");
     int likeCount = 0;
     int dislikeCount = 0;
     for (PostVote vote : post.getVotes()) {

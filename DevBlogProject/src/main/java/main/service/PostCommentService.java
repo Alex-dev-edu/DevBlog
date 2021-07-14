@@ -33,11 +33,13 @@ public class PostCommentService {
   }
 
   public ResponseEntity<CommentResponse> postComment(Principal principal,
-      String parentId, int postId, String text)
+      Integer parentId, Integer postId, String text)
   {
+    System.out.println(parentId);
+    System.out.println(postId);
     int parent = -1;
-    if ((parentId!=null) && (!parentId.equals(""))){
-      parent = Integer.parseInt(parentId);
+    if (parentId!=null){
+      parent = parentId;
     }
     List<Post> postList = postRepository.findPostById(postId);
     List<PostComment> postCommentList = commentRepository.findById(parent);
@@ -63,13 +65,13 @@ public class PostCommentService {
 
 
     PostComment comment = new PostComment();
-    comment.setPostId(postId);
+    comment.setPost(postList.get(0));
     comment.setTime(new java.util.Date(System.currentTimeMillis()));
     comment.setText(text);
     if (parent!=-1){
-      comment.setParentId(parent);
+      comment.setParent(postCommentList.get(0));
     }
-    comment.setUserId(user.getId());
+    comment.setUser(user);
     commentRepository.save(comment);
 
     CommentResponse response = new CommentResponse();

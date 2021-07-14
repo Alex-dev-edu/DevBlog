@@ -1,6 +1,7 @@
 package main.controller;
 
 import java.security.Principal;
+import main.api.request.PostCommentRequest;
 import main.api.request.SettingsRequest;
 import main.api.response.CaptchaResponse;
 import main.api.response.CommentResponse;
@@ -68,9 +69,10 @@ public class ApiGeneralController {
   }
 
   @PostMapping("/comment")
-  public ResponseEntity<CommentResponse> postComment(Principal principal, @RequestParam String parent_id,
-      @RequestParam int post_id, @RequestParam String text){
-    return commentService.postComment(principal, parent_id, post_id, text);
+  public ResponseEntity<CommentResponse> postComment(Principal principal, @RequestBody
+      PostCommentRequest request){
+    return commentService.postComment(principal, request.getParentId(), request.getPostId(),
+        request.getText());
   }
 
   @PutMapping("/settings")
