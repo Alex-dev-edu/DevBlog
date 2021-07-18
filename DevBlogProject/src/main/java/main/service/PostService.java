@@ -287,9 +287,10 @@ public class PostService {
     } else {
       fileName += ".jpg";
     }
-    String destinationDirectory = "/upload/" + pt1 + "/" + pt2 + "/" + pt3;
-    System.out.println(destinationDirectory);
-    String filePath = destinationDirectory + "/" + fileName;
+    String home = System.getProperty("user.dir")+ "\\src\\main\\resources";
+    String responseString = "\\upload\\" + pt1 + "\\" + pt2 + "\\" + pt3;
+    String destinationDirectory = home + responseString;
+    String filePath = destinationDirectory + "\\" + fileName;
     File destination = new File(destinationDirectory);
     destination.mkdirs();
     Path path = Paths.get(filePath);
@@ -323,7 +324,11 @@ public class PostService {
       e.printStackTrace();
     }
     PostImageResponse response = new PostImageResponse();
-    response.setPath(filePath);
+    responseString += "\\" + fileName;
+    responseString = responseString.replaceAll("\\\\", "/");
+    System.out.println(responseString);
+    response.setPath(responseString);
+
     return response;
   }
 

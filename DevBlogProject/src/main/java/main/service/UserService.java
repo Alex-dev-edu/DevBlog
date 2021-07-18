@@ -136,6 +136,11 @@ public class UserService {
     userDto.setId(currentUser.getId());
     userDto.setName(currentUser.getName());
     userDto.setSettings(true);
+    if (currentUser.getIsModerator() == 1){
+      Pageable pageRequest = PageRequest.of(0, 10);
+      Page<Post> postsPage = postRepository.findAllNewPosts(pageRequest);
+      userDto.setModerationCount(postsPage.getTotalElements());
+    }
 
     AuthCheckResponse response = new AuthCheckResponse();
     response.setUser(userDto);
@@ -159,7 +164,7 @@ public class UserService {
     message.setFrom("noreply@devblogdiploma.com");
     message.setTo(email);
     message.setSubject("Restore Password");
-    String newURL = currUrl.substring(0, currUrl.lastIndexOf('/')) + "/login/change-password/" + generatedString;
+    String newURL = currUrl.substring(0, currUrl.length() - 17) + "/login/change-password/" + generatedString;
     System.out.println(newURL);
     message.setText("This link will restore your password at devblog: " + newURL);
     mailSender.send(message);

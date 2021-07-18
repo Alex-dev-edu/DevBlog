@@ -59,15 +59,6 @@ public class ApiAuthController {
 
   @GetMapping("/check")
   public AuthCheckResponse authCheck(Principal principal) {
-//    AuthCheckResponse response = new AuthCheckResponse();
-//    response.setResult(true);
-//    AuthCheckUserDTO userDTO = new AuthCheckUserDTO();
-//    userDTO.setEmail("vitya.pupkin@mail.ru");
-//    userDTO.setModeration(false);
-//    userDTO.setId(3);
-//    userDTO.setName("Vitek");
-//    response.setUser(userDTO);
-//    return response;
     if (principal == null){
       return new AuthCheckResponse();
     }

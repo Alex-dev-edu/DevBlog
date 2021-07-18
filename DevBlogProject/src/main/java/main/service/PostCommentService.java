@@ -45,7 +45,7 @@ public class PostCommentService {
     List<PostComment> postCommentList = commentRepository.findById(parent);
 
     HashMap<String, String> errors = new HashMap<>();
-    if (postCommentList.size()<1){
+    if ((postCommentList.size()<1) && (parent!=-1)){
       errors.put("parent", "Указанного комментария-родителя не существует");
     }
     if (postList.size()<1){
@@ -58,7 +58,7 @@ public class PostCommentService {
       CommentErrorResponse errorResponse = new CommentErrorResponse();
       errorResponse.setResult(false);
       errorResponse.setErrors(errors);
-      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
     User user = userRepository.findByEmail(principal.getName())
         .orElseThrow(() -> new UsernameNotFoundException(principal.getName()));

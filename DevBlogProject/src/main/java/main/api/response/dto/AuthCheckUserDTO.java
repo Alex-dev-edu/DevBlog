@@ -14,7 +14,7 @@ public class AuthCheckUserDTO {
 
   private boolean moderation;
 
-  private int moderationCount;
+  private long moderationCount;
 
   private boolean settings;
 }

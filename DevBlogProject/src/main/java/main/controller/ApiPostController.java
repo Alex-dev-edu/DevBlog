@@ -132,8 +132,12 @@ public class ApiPostController {
 
   @RequestMapping(value = "/image", method = RequestMethod.POST)
   @PreAuthorize("hasAuthority('user:write')")
-  public PostImageResponse postImage(@RequestPart MultipartFile image){
-    return postService.postImage(image, false);
+  public ResponseEntity postImage(@RequestPart MultipartFile image){
+    PostImageResponse response = postService.postImage(image, false);
+    if (response.getPath()==null){
+      return ResponseEntity.ok(response);
+    }
+    return ResponseEntity.ok(response.getPath());
   }
 
   @RequestMapping(value = "/post/{id}", method = RequestMethod.PUT)
