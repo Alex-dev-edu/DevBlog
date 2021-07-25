@@ -163,20 +163,29 @@ public class ApiPostController {
     return postService.postModeration(principal, request.getPost_id(), request.getDecision());
   }
 
-  @PostMapping("/profile/my")
+
   @PreAuthorize("hasAuthority('user:write')")
-  public RegisterResponse postProfile(Principal principal,
-//      @RequestPart(required = false) String email,
-//      @RequestPart(required = false) String password, @RequestPart(required = false) Integer removePhoto,
-//      @RequestPart(required = false) String name,
-      @RequestPart PostProfileRequest request,
-      @RequestPart(required = false) MultipartFile photo){
+  @PostMapping(value = "/profile/my", consumes = {"multipart/form-data"})
+  public ResponseEntity<RegisterResponse> updateProfile( Principal principal,
+      @RequestParam(name = "name", required = false) String name,
+      @RequestParam(name = "email", required = false) String email,
+      @RequestParam(name = "password", required = false) String password,
+      @RequestParam(name = "removePhoto", required = false, defaultValue = "0") int removePhoto,
+      @RequestParam(name = "photo", required = false) MultipartFile photo){
     if (photo.isEmpty()){
       System.out.println("photo is empty");
     }
-    return postService.postMyProfile(principal,
-        request.getEmail(), request.getPassword(), request.getName(), request.getRemovePhoto(),
-//        email, password, name, removePhoto,
-        photo);
+    return ResponseEntity.ok(postService.postMyProfile(principal,
+               email, password, name, removePhoto,
+        photo));
+  }
+
+  @PreAuthorize("hasAuthority('user:write')")
+  @PostMapping("/profile/my")
+  public ResponseEntity<RegisterResponse> updateProfile(Principal principal,
+      @RequestBody PostProfileRequest request){
+    return ResponseEntity.ok(postService.postMyProfileNoPic(principal,
+        request.getName(), request.getEmail(), request.getPassword(),
+        request.getRemovePhoto()));
   }
 }

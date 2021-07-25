@@ -324,6 +324,7 @@ public class PostService {
       e.printStackTrace();
     }
     PostImageResponse response = new PostImageResponse();
+//    responseString = "\\resources" + responseString;
     responseString += "\\" + fileName;
     responseString = responseString.replaceAll("\\\\", "/");
     System.out.println(responseString);
@@ -487,83 +488,71 @@ public class PostService {
       if (removePhoto==0){
         user.setPhoto(postImage(photo, true).getPath());
       }
-    } else {
-      System.out.println("removePhoto=null");
     }
 
     if (email!=null){
       user.setEmail(email);
-    }else {
-      System.out.println("email=null");
     }
     if (name!=null){
       user.setName(name);
-    }else {
-      System.out.println("name=null");
     }
     if (password!=null){
       PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
       password = (encoder.encode(password)).substring(8);
       user.setPassword(password);
-    }else {
-      System.out.println("password=null");
+    }
+    userRepository.save(user);
+    response.setResult(true);
+    return response;
+  }
+
+  public RegisterResponse postMyProfileNoPic(Principal principal, String name,
+      String email, String password, Integer removePhoto){
+    RegisterResponse response = new RegisterResponse();
+    User user = userRepository.findByEmail(principal.getName())
+        .orElseThrow(() -> new UsernameNotFoundException(principal.getName()));
+    HashMap<String, String> errors = new HashMap<>();
+
+    if ((password!=null) && (password.length()<6)){
+      errors.put("password", "Пароль короче 6-ти символов");
+    }
+    if (name!=null){
+      List<Integer> userList = userRepository.findAllByName(name);
+      if ((name.length()<2) || ((userList.size()>0) && (userList.get(0) != user.getId()))){
+        errors.put("name", "Имя указано неверно");
+      }
+    }
+    if (email!=null){
+      List<Integer> userList = userRepository.findAllByEmail(email);
+      if ((userList.size()>0) && (userList.get(0) != user.getId())){
+        errors.put("email", "Этот email уже зарегистрирован");
+      }
+    }
+    if (errors.size()>0){
+      RegisterErrorResponse responseWithErrors = new RegisterErrorResponse();
+      responseWithErrors.setErrors(errors);
+      responseWithErrors.setResult(false);
+      return responseWithErrors;
     }
 
-//    if ((request.getPassword()!=null) && (request.getPassword().length()<6)){
-//      errors.put("password", "Пароль короче 6-ти символов");
-//    }
-//    if (request.getName()!=null){
-//      List<Integer> userList = userRepository.findAllByName(request.getName());
-//      if ((request.getName().length()<2) || ((userList.size()>0) && (userList.get(0) != user.getId()))){
-//        errors.put("name", "Имя указано неверно");
-//      }
-//    }
-//    if (request.getEmail()!=null){
-//      List<Integer> userList = userRepository.findAllByEmail(request.getEmail());
-//      if ((userList.size()>0) && (userList.get(0) != user.getId())){
-//        errors.put("email", "Этот email уже зарегистрирован");
-//      }
-//    }
-//    if (photo!=null){
-//      if (photo.getSize() > 1000000){
-//        errors.put("photo", "Превышен допустимый размер фотографии");
-//      } else {
-//        if ((!Objects.requireNonNull(photo.getContentType()).contains("png")) && (!Objects.requireNonNull(photo.getContentType()).contains("jpg"))
-//            && (!Objects.requireNonNull(photo.getContentType()).contains("jpeg"))) {
-//          errors.put("photo", "Допустимы только расширения .png и .jpg/.jpeg");
-//        }
-//      }
-//    }
-//    if (errors.size()>0){
-//      RegisterErrorResponse responseWithErrors = new RegisterErrorResponse();
-//      responseWithErrors.setErrors(errors);
-//      responseWithErrors.setResult(false);
-//      return responseWithErrors;
-//    }
-//
-//    if (request.getRemovePhoto()!=null){
-//      if (user.getPhoto()!=null){
-//        File oldPhoto = new File(user.getPhoto());
-//        oldPhoto.delete();
-//        user.setPhoto(null);
-//      }
-//
-//      if (request.getRemovePhoto()==0){
-//        user.setPhoto(postImage(photo, true).getPath());
-//      }
-//    }
-//
-//    if (request.getEmail()!=null){
-//      user.setEmail(request.getEmail());
-//    }
-//    if (request.getName()!=null){
-//      user.setName(request.getName());
-//    }
-//    if (request.getPassword()!=null){
-//      PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-//      request.setPassword((encoder.encode(request.getPassword())).substring(8));
-//      user.setPassword(request.getPassword());
-//    }
+    if (removePhoto!=null){
+      if (user.getPhoto()!=null){
+        File oldPhoto = new File(user.getPhoto());
+        oldPhoto.delete();
+        user.setPhoto(null);
+      }
+    }
+    if (email!=null){
+      user.setEmail(email);
+    }
+    if (name!=null){
+      user.setName(name);
+    }
+    if (password!=null){
+      PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+      password = (encoder.encode(password)).substring(8);
+      user.setPassword(password);
+    }
     userRepository.save(user);
     response.setResult(true);
     return response;
