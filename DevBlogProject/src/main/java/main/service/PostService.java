@@ -287,7 +287,7 @@ public class PostService {
     } else {
       fileName += ".jpg";
     }
-    String home = System.getProperty("user.dir")+ "\\src\\main\\resources";
+    String home = System.getProperty("user.dir");
     String responseString = "\\upload\\" + pt1 + "\\" + pt2 + "\\" + pt3;
     String destinationDirectory = home + responseString;
     String filePath = destinationDirectory + "\\" + fileName;
