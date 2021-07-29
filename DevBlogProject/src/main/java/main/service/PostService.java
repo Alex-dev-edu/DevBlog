@@ -46,7 +46,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -202,11 +204,23 @@ public class PostService {
     return response;
   }
 
-  public List<SinglePostResponse> getPostById(int id){
+  public List<SinglePostResponse> getPostById(Authentication authentication, int id){
     List<SinglePostResponse> response = new ArrayList<>();
     List<Post> posts = postRepository.findPostById(id);
     for (Post post : posts){
       response.add(MappingUtils.mapPostToSinglePostDTO(post));
+      boolean viewsShouldBeAdded = true;
+      if (!(authentication instanceof AnonymousAuthenticationToken)) {
+        User user = userRepository.findByEmail(authentication.getName())
+            .orElseThrow(() -> new UsernameNotFoundException(authentication.getName()));
+        if ((user.getIsModerator()==1) || (user.getId() == post.getUserId())){
+          viewsShouldBeAdded = false;
+        }
+      }
+      if (viewsShouldBeAdded) {
+        post.setViewCount(post.getViewCount() + 1);
+        postRepository.save(post);
+      }
     }
     return response;
   }
@@ -327,7 +341,6 @@ public class PostService {
 //    responseString = "\\resources" + responseString;
     responseString += "\\" + fileName;
     responseString = responseString.replaceAll("\\\\", "/");
-    System.out.println(responseString);
     response.setPath(responseString);
 
     return response;

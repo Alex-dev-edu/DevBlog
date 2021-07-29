@@ -2,6 +2,7 @@ package main.controller;
 
 import java.security.Principal;
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import main.api.request.ImageRequest;
@@ -22,6 +23,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -95,8 +99,9 @@ public class ApiPostController {
   }
 
   @GetMapping("/post/{id}")
-  public ResponseEntity<SinglePostResponse> postById(@PathVariable int id){
-    List<SinglePostResponse> response = postService.getPostById(id);
+  public ResponseEntity<SinglePostResponse> postById(Authentication authentication, @PathVariable int id){
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    List<SinglePostResponse> response = postService.getPostById(auth, id);
     if (response.size()==0){
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
     }

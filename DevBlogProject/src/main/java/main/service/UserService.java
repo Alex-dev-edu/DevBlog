@@ -136,6 +136,7 @@ public class UserService {
     userDto.setId(currentUser.getId());
     userDto.setName(currentUser.getName());
     userDto.setSettings(true);
+    userDto.setPhoto(currentUser.getPhoto());
     if (currentUser.getIsModerator() == 1){
       Pageable pageRequest = PageRequest.of(0, 10);
       Page<Post> postsPage = postRepository.findAllNewPosts(pageRequest);
