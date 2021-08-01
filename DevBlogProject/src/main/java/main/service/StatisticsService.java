@@ -42,11 +42,21 @@ public class StatisticsService {
     StatisticsResponse response = new StatisticsResponse();
     List<ILikeDislikeStats> likesDislikes = postRepository.findLikeDislikeStatsOfUserId(user.getId());
     List<IPostsViewsTimeStats> postsViewsTime = postRepository.findPostViewsTimeStatsOfUser(user.getId());
-    response.setPostsCount(postsViewsTime.get(0).getPostCount());
-    response.setLikesCount(likesDislikes.get(0).getLikeCount());
-    response.setDislikesCount(likesDislikes.get(0).getDislikeCount());
-    response.setViewsCount(postsViewsTime.get(0).getViewCount());
-    response.setFirstPublication(postsViewsTime.get(0).getOldestPostDate().getTime() / 1000);
+    if (postsViewsTime.size()>0){
+      response.setPostsCount(postsViewsTime.get(0).getPostCount());
+      response.setViewsCount(postsViewsTime.get(0).getViewCount());
+      response.setFirstPublication(postsViewsTime.get(0).getOldestPostDate().getTime() / 1000);
+    } else {
+      response.setPostsCount(0);
+      response.setViewsCount(0);
+    }
+    if (likesDislikes.size()>0) {
+      response.setLikesCount(likesDislikes.get(0).getLikeCount());
+      response.setDislikesCount(likesDislikes.get(0).getDislikeCount());
+    } else {
+      response.setLikesCount(0);
+      response.setDislikesCount(0);
+    }
     return  response;
   }
 

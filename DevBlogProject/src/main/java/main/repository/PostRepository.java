@@ -25,7 +25,7 @@ public interface PostRepository extends PagingAndSortingRepository<Post, Integer
   @Query(value = "SELECT p FROM Post p WHERE p.isActive = 1 and p.moderationStatus = 'ACCEPTED' and p.time<current_timestamp()  order by size(p.comments) desc")
   Page<Post> findAllPostsByCommentCount(Pageable pageable);
 
-  @Query(value = "SELECT p FROM Post p left join p.votes vote WHERE p.isActive = 1 and p.moderationStatus = 'ACCEPTED' and p.time<current_timestamp() GROUP BY p order by SUM(vote.value) desc")
+  @Query(value = "SELECT p FROM Post p left join p.votes vote WHERE p.isActive = 1 and p.moderationStatus = 'ACCEPTED' and p.time<current_timestamp() GROUP BY p.id order by CASE WHEN (size(p.votes) = 0) THEN 0 ELSE SUM(vote.value) END desc")
   Page<Post> findAllPostsByLikeCount(Pageable pageable);
 
   @Query(value = "SELECT p FROM Post p WHERE p.isActive = 1 and p.moderationStatus = 'ACCEPTED' and p.time<current_timestamp()  order by p.time desc")

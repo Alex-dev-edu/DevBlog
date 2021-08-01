@@ -17,8 +17,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import javassist.NotFoundException;
 import javax.imageio.ImageIO;
-import main.api.request.PostProfileRequest;
 import main.api.request.PostRequest;
 import main.api.response.CalendarResponse;
 import main.api.response.PostImageErrorResponse;
@@ -31,11 +31,13 @@ import main.api.response.TagResponse;
 import main.api.response.dto.PostDTO;
 import main.api.response.dto.TagDTO;
 import main.api.response.projections.IDateCommentCount;
+import main.model.GlobalSetting;
 import main.model.ModerationStatus;
 import main.model.Post;
 import main.model.Tag;
 import main.model.Tag2Post;
 import main.model.User;
+import main.repository.GlobalSettingRepository;
 import main.repository.PostRepository;
 import main.repository.Tag2PostRepository;
 import main.repository.TagRepository;
@@ -63,16 +65,19 @@ public class PostService {
   private final TagRepository tagRepository;
   private final Tag2PostRepository tag2PostRepository;
   private final AuthenticationManager authenticationManager;
+  private final GlobalSettingRepository settingRepository;
 
   @Autowired
   public PostService(UserRepository userRepository, PostRepository postRepository,
       TagRepository tagRepository, Tag2PostRepository tag2PostRepository,
-      AuthenticationManager authenticationManager) {
+      AuthenticationManager authenticationManager,
+      GlobalSettingRepository settingRepository) {
     this.userRepository = userRepository;
     this.postRepository = postRepository;
     this.tagRepository = tagRepository;
     this.tag2PostRepository = tag2PostRepository;
     this.authenticationManager = authenticationManager;
+    this.settingRepository = settingRepository;
   }
 
   public TagResponse getTags(String query) {
@@ -247,7 +252,17 @@ public class PostService {
     Post post = new Post();
     post.setUser(user);
     post.setIsActive(request.getActive());
-    post.setModerationStatus(ModerationStatus.NEW);
+    try {
+      GlobalSetting premoderation = settingRepository.findByCode("POST_PREMODERATION")
+          .orElseThrow(() -> new NotFoundException("SETTING NOT FOUND"));
+      if ((user.getIsModerator()==-1) && (premoderation.getValue().equals("YES"))){
+        post.setModerationStatus(ModerationStatus.NEW);
+      } else {
+        post.setModerationStatus(ModerationStatus.ACCEPTED);
+      }
+    } catch (NotFoundException ex){
+      ex.printStackTrace();
+    }
     post.setTitle(request.getTitle());
     if (request.getTimestamp()<System.currentTimeMillis()){
       post.setTime(new java.util.Date(System.currentTimeMillis()));
@@ -437,6 +452,8 @@ public class PostService {
 
     List<Post> postList = postRepository.findPostById(postId);
     Post post = postList.get(0);
+
+    System.out.println(decision);
 
     switch (decision) {
       case "decline":

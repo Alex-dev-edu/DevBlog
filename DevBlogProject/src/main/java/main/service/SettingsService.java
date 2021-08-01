@@ -29,7 +29,7 @@ public class SettingsService {
     SettingsResponse response = new SettingsResponse();
     for (GlobalSetting setting : globalSettingRepository.findAll()){
       if (setting.getCode().equals("MULTIUSER_MODE")){
-        response.setMultiuserMode(setting.getValue().equals("NO"));
+        response.setMultiuserMode(setting.getValue().equals("YES"));
       }
       if (setting.getCode().equals("POST_PREMODERATION")){
         response.setPostPremoderation(setting.getValue().equals("YES"));
@@ -44,6 +44,7 @@ public class SettingsService {
   public void setGlobalSettings(boolean multiuserMode, boolean postPremoderation, boolean statisticsIsPublic){
 
     for (GlobalSetting setting : globalSettingRepository.findAll()){
+      System.out.println(setting.getCode() + " " + setting.getValue() + "\n");
       if (setting.getCode().equals("MULTIUSER_MODE")){
         if (multiuserMode){
           setting.setValue("YES");
@@ -70,6 +71,7 @@ public class SettingsService {
           setting.setValue("NO");
         }
       }
+      globalSettingRepository.save(setting);
     }
 
   }

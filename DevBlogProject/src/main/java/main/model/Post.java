@@ -13,6 +13,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
+import javax.persistence.Lob;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -57,7 +58,8 @@ public class Post {
 
   private String title;
 
-  @Column(columnDefinition = "TEXT")
+  @Lob
+  @Column(columnDefinition = "LONGTEXT")
   private String text;
 
   @Column(name = "view_count")

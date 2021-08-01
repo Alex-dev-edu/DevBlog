@@ -78,6 +78,6 @@ public class ApiGeneralController {
   @PutMapping("/settings")
   @PreAuthorize("hasAuthority('user:moderate')")
   public void putSettings(@RequestBody SettingsRequest request){
-    settingsService.setGlobalSettings(request.isMULTIUSER_MODE(), request.isPOST_PREMODERATION(), request.isSTATISTICS_IS_PUBLIC());
+    settingsService.setGlobalSettings(request.isMultiuserMode(), request.isPostPremoderation(), request.isStatisticsPublic());
   }
 }
