@@ -453,8 +453,6 @@ public class PostService {
     List<Post> postList = postRepository.findPostById(postId);
     Post post = postList.get(0);
 
-    System.out.println(decision);
-
     switch (decision) {
       case "decline":
         post.setModerationStatus(ModerationStatus.DECLINED);
