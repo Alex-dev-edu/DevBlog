@@ -213,7 +213,6 @@ public class PostService {
     List<SinglePostResponse> response = new ArrayList<>();
     List<Post> posts = postRepository.findPostById(id);
     for (Post post : posts){
-      response.add(MappingUtils.mapPostToSinglePostDTO(post));
       boolean viewsShouldBeAdded = true;
       if (!(authentication instanceof AnonymousAuthenticationToken)) {
         User user = userRepository.findByEmail(authentication.getName())
@@ -226,6 +225,7 @@ public class PostService {
         post.setViewCount(post.getViewCount() + 1);
         postRepository.save(post);
       }
+      response.add(MappingUtils.mapPostToSinglePostDTO(post));
     }
     return response;
   }
