@@ -51,7 +51,7 @@ public class PostCommentService {
     if (postList.size()<1){
       errors.put("post", "Указанного поста не существует");
     }
-    if (text.replaceAll("<.*?>", "").length()<21){
+    if (text.replaceAll("<.*?>", "").length()<10){
       errors.put("text", "Текст публикации слишком короткий");
     }
     if (errors.size()>0){

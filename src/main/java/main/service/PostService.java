@@ -233,7 +233,7 @@ public class PostService {
   public RegisterResponse post(Principal principal, PostRequest request){
     RegisterResponse response = new RegisterResponse();
     HashMap<String, String> errors = new HashMap<>();
-    if (request.getText().replaceAll("<.*?>", "").length()<51){
+    if (request.getText().replaceAll("<.*?>", "").length()<10){
       errors.put("text", "Текст публикации слишком короткий");
     }
     if (request.getTitle().length()<4){
@@ -365,7 +365,7 @@ public class PostService {
     RegisterResponse response = new RegisterResponse();
     HashMap<String, String> errors = new HashMap<>();
     List<Post> postList = postRepository.findPostById(id);
-    if (request.getText().replaceAll("<.*?>", "").length()<51){
+    if (request.getText().replaceAll("<.*?>", "").length()<10){
       errors.put("title", "Заголовок слишком короткий");
     }
     if (request.getTitle().length()<4){
