@@ -317,9 +317,9 @@ public class PostService {
       fileName += ".jpg";
     }
     String home = System.getProperty("user.dir");
-    String responseString = "\\upload\\" + pt1 + "\\" + pt2 + "\\" + pt3;
+    String responseString = File.separator + "upload" + File.separator + pt1 + File.separator + pt2 + File.separator + pt3;
     String destinationDirectory = home + responseString;
-    String filePath = destinationDirectory + "\\" + fileName;
+    String filePath = destinationDirectory + File.separator + fileName;
     File destination = new File(destinationDirectory);
     destination.mkdirs();
     Path path = Paths.get(filePath);
@@ -330,7 +330,7 @@ public class PostService {
               StandardCopyOption.REPLACE_EXISTING);
         }
       } else{
-        File tmpFile = new File(destinationDirectory + "/tmp" + fileName);
+        File tmpFile = new File(destinationDirectory + File.separator + "tmp" + fileName);
         File newFile = new File(filePath);
         file.transferTo(tmpFile);
         BufferedImage image = ImageIO.read(tmpFile);
@@ -354,8 +354,8 @@ public class PostService {
     }
     PostImageResponse response = new PostImageResponse();
 //    responseString = "\\resources" + responseString;
-    responseString += "\\" + fileName;
-    responseString = responseString.replaceAll("\\\\", "/");
+    responseString += File.separator + fileName;
+//    responseString = responseString.replaceAll("\\\\", "/");
     response.setPath(responseString);
 
     return response;
