@@ -21,7 +21,9 @@ public class MappingUtils {
     postDTO.getUser().setName(post.getUser().getName());
     postDTO.setTitle(post.getTitle());
     String announce = post.getText().replaceAll("<.?div>", "\n");
-    announce = announce.replaceAll("<.*?>", "");
+    while (announce.matches(".*<[^<>]*?>.*")) {
+      announce = announce.replaceAll("<[^<>]*?>", "");
+    }
     announce = announce.replaceAll("&nbsp;", "");
     postDTO.setAnnounce(announce.substring(0, Math.min(announce.length(), 150))   + "...");
     int likeCount = 0;
