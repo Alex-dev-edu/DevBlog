@@ -349,6 +349,7 @@ public class PostService {
           }
         }
         ImageIO.write(newImage, fileName.substring(fileName.length()-3), newFile);
+        tmpFile.delete();
       }
     }
     catch (IOException e) {
