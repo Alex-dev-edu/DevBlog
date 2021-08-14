@@ -12,11 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface CaptchaRepository extends CrudRepository<CaptchaCode, Integer> {
 
-  @Query("SELECT c.id FROM CaptchaCode c WHERE c.code = :code and c.secretCode = :secret")
+  @Query("SELECT c.id FROM CaptchaCode c "
+      + "WHERE c.code = :code and c.secretCode = :secret")
   List<Integer> findCaptcha(@Param("code") String code, @Param("secret") String secret);
 
   @Transactional
   @Modifying
-  @Query("DELETE FROM CaptchaCode c WHERE c.time < (current_timestamp() + 3600000)")
+  @Query("DELETE FROM CaptchaCode c "
+      + "WHERE c.time < (current_timestamp() + 3600000)")
   void deleteOldCaptcha();
 }

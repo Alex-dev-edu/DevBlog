@@ -5,6 +5,7 @@ import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import main.api.request.ImageRequest;
 import main.api.request.ModerationRequest;
 import main.api.request.PostProfileRequest;
@@ -40,18 +41,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class ApiPostController {
 
   private final PostService postService;
   private final UserService userService;
   private final VoteService voteService;
-  @Autowired
-  public ApiPostController(PostService postService, UserService userService,
-      VoteService voteService) {
-    this.postService = postService;
-    this.userService = userService;
-    this.voteService = voteService;
-  }
 
   @GetMapping("/post")
   public PostResponse post(@RequestParam int offset, @RequestParam int limit,
@@ -62,10 +57,8 @@ public class ApiPostController {
 
 
   @GetMapping("/tag")
-  public TagResponse tags(@RequestParam(required = false) String query){
-    if (query==null){
-      return postService.getTags("");
-    }
+  public TagResponse tags(
+      @RequestParam(required = false, defaultValue = "") String query){
     return postService.getTags(query);
   }
 

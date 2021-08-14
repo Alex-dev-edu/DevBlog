@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PostVoteRepository extends JpaRepository<PostVote, Integer> {
 
-  @Query(value = "SELECT v FROM PostVote v WHERE v.userId = :userId and v.postId = :postId")
+  @Query(value = "SELECT v FROM PostVote v "
+      + "WHERE v.userId = :userId and v.postId = :postId")
   List<PostVote> findVoteByUserAndPostId(@Param("userId") int userId, @Param("postId") int postId);
 }

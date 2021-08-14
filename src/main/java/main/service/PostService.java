@@ -129,18 +129,7 @@ public class PostService {
     List<PostDTO> responsePosts = new ArrayList<>();
 
     Pageable pageRequest = PageRequest.of((offset / limit), limit);
-    Page<Post> postsPage = postRepository.findAllRecentPosts(pageRequest);
-    switch (mode) {
-      case "popular":
-        postsPage = postRepository.findAllPostsByCommentCount(pageRequest);
-        break;
-      case "best":
-        postsPage = postRepository.findAllPostsByLikeCount(pageRequest);;
-        break;
-      case "early":
-        postsPage = postRepository.findAllOldPosts(pageRequest);
-        break;
-    }
+    Page<Post> postsPage = getPage(mode, pageRequest);
 
     List<Post>  posts = postsPage.getContent();
     for (Post post : posts) {
@@ -149,6 +138,19 @@ public class PostService {
     response.setCount(postsPage.getTotalElements());
     response.setPosts(responsePosts);
     return response;
+  }
+
+  private Page<Post> getPage(String mode, Pageable pageable){
+    switch (mode) {
+      case "popular":
+        return postRepository.findAllPostsByCommentCount(pageable);
+      case "best":
+        return postRepository.findAllPostsByLikeCount(pageable);
+      case "early":
+        return postRepository.findAllOldPosts(pageable);
+      default:
+        return postRepository.findAllRecentPosts(pageable);
+    }
   }
 
   public PostResponse getPostsByQuery(int offset, int limit, String query){
@@ -347,15 +349,14 @@ public class PostService {
           }
         }
         ImageIO.write(newImage, fileName.substring(fileName.length()-3), newFile);
+        tmpFile.delete();
       }
     }
     catch (IOException e) {
       e.printStackTrace();
     }
     PostImageResponse response = new PostImageResponse();
-//    responseString = "\\resources" + responseString;
     responseString += File.separator + fileName;
-//    responseString = responseString.replaceAll("\\\\", "/");
     response.setPath(responseString);
 
     return response;

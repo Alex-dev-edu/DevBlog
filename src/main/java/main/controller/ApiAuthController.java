@@ -2,6 +2,7 @@ package main.controller;
 
 import java.security.Principal;
 import javax.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import main.api.request.LoginRequest;
 import main.api.request.RegisterRequest;
 import main.api.request.RestorePasswordRequest;
@@ -23,15 +24,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class ApiAuthController {
 
   private final UserService userService;
   private final CaptchaService captchaService;
-
-  public ApiAuthController(UserService userService, CaptchaService captchaService) {
-    this.userService = userService;
-    this.captchaService = captchaService;
-  }
 
   @PostMapping("/register")
   public RegisterResponse authRegister(@RequestBody RegisterRequest request){

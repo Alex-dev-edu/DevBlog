@@ -1,6 +1,7 @@
 package main.controller;
 
 import java.security.Principal;
+import lombok.RequiredArgsConstructor;
 import main.api.request.PostCommentRequest;
 import main.api.request.SettingsRequest;
 import main.api.response.CaptchaResponse;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class ApiGeneralController {
 
   private final InitResponse initResponse;
@@ -31,17 +33,6 @@ public class ApiGeneralController {
   private final CaptchaService captchaService;
   private final StatisticsService statisticsService;
   private final PostCommentService commentService;
-
-  public ApiGeneralController(InitResponse initResponse,
-      SettingsService settingsService,
-      CaptchaService captchaService, StatisticsService statisticsService,
-      PostCommentService commentService) {
-    this.initResponse = initResponse;
-    this.settingsService = settingsService;
-    this.captchaService = captchaService;
-    this.statisticsService = statisticsService;
-    this.commentService = commentService;
-  }
 
   @GetMapping("/settings")
   public SettingsResponse settings() {
